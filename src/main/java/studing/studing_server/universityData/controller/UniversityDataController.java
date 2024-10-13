@@ -15,7 +15,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/universityData")
+@RequestMapping("/api/v1/universityData")
 @RequiredArgsConstructor
 public class UniversityDataController {
 
