@@ -7,11 +7,11 @@ import studing.studing_server.member.entity.Member;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class CustomUserDetails implements UserDetails {
+public class CustomMemberDetails implements UserDetails {
 
     private final Member member;
 
-    public CustomUserDetails(Member member) {
+    public CustomMemberDetails(Member member) {
 
         this.member = member;
     }
