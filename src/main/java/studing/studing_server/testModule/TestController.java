@@ -35,6 +35,19 @@ public class TestController {
     }
 
 
+    @GetMapping("/")
+    public String mainP() {
+
+        return "main Controller";
+    }
+
+    @GetMapping("/admin")
+    public String adminP() {
+
+        return "admin Controller";
+    }
+
+
 
 
 }
