@@ -4,7 +4,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import studing.studing_server.member.dto.CustomUserDetails;
+
+import studing.studing_server.member.dto.CustomMemberDetails;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
 
@@ -27,7 +28,7 @@ public class CustomMemberDetailsService implements UserDetailsService {
         if (memberData != null) {
 
             //UserDetails에 담아서 return하면 AutneticationManager가 검증 함
-            return new CustomUserDetails(memberData);
+            return new CustomMemberDetails(memberData);
         }
 
         return null;
