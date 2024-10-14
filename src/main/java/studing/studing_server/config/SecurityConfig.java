@@ -50,7 +50,7 @@ public class SecurityConfig {
                 .httpBasic((auth) -> auth.disable());
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("api/v1/member/signin",    "/login"    , "/", "/join","/api/v1/universityData/university","api/v1/universityData/department").permitAll()
+                        .requestMatchers("api/v1/member/signin",    "/login"    , "/", "/join","/api/v1/universityData/university","api/v1/universityData/department","api/v1/member/signup").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
