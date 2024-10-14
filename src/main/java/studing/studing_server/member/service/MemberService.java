@@ -2,6 +2,7 @@ package studing.studing_server.member.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +24,7 @@ public class MemberService {
     private final DepartmentRepository departmentRepository;
     private final S3Service s3Service;
 
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
 
@@ -59,8 +61,8 @@ public class MemberService {
     }
 
     private Member createMember(MemberCreateRequest request, String imageUrl, String memberCollegeDepartment) {
-        //String hashedPassword = passwordEncoder.encode(request.password());
-        String hashedPassword="dd";
+       String hashedPassword = bCryptPasswordEncoder.encode(request.password());
+
 
 
         return Member.builder()
