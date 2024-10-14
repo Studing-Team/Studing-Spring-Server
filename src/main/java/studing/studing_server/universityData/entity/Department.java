@@ -28,8 +28,5 @@ public class Department {
     private University university;
 
 
-    public Long getCollegeDepartmentId() {
-        return this.collegeDepartment.getId();
-    }
 
 }
