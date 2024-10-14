@@ -8,9 +8,11 @@ import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import studing.studing_server.common.BaseTimeEntity;
 @Entity
 @Getter
+@Setter
 @NoArgsConstructor
 
 public class Member extends BaseTimeEntity {
