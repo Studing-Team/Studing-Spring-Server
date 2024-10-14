@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import studing.studing_server.external.S3Service;
+import studing.studing_server.member.dto.CheckLoginIdRequest;
 import studing.studing_server.member.dto.MemberCreateRequest;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
@@ -76,6 +77,9 @@ public class MemberService {
                 .build();
     }
 
+    public boolean isDuplicateEmail(CheckLoginIdRequest checkLoginIdRequest) {
+        return memberRepository.existsByLoginIdentifier(checkLoginIdRequest.loginIdentifier());
+    }
 
 
 
