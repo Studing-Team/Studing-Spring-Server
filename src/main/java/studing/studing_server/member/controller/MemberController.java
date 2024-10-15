@@ -32,9 +32,6 @@ public class MemberController {
         }
     }
 
-
-
-
     @PostMapping("/signup")
     public ResponseEntity<SuccessStatusResponse<Void>> signUp(@ModelAttribute MemberCreateRequest memberCreateRequest) {
 
