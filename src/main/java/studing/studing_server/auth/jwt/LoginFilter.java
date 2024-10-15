@@ -1,5 +1,6 @@
 package studing.studing_server.auth.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -9,8 +10,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import studing.studing_server.common.dto.SuccessMessage;
+import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.member.dto.CustomMemberDetails;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -62,7 +66,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String token = jwtUtil.createJwt(username, role, 60*60*60*10L);
 
-        response.addHeader("Authorization", "Bearer " + token);
+        // JWT 토큰을 응답 헤더에 추가하는 대신, 응답 바디의 data에 포함
+        LoginResponseData loginData = new LoginResponseData(token);
+
+        // SuccessStatusResponse를 통해 응답 바디 작성
+        SuccessStatusResponse<LoginResponseData> successResponse = SuccessStatusResponse.of(SuccessMessage.SIGNIN_SUCCESS, loginData);
+
+        // JSON 형식으로 응답 바디 작성
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        try {
+            response.getWriter().write(convertObjectToJson(successResponse));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     //로그인 실패시 실행하는 메소드
@@ -73,4 +93,31 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 
     }
-}
+
+    // JSON 변환을 위한 메서드 (Object를 JSON 문자열로 변환)
+    private String convertObjectToJson(Object object) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.writeValueAsString(object);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+
+    public static class LoginResponseData {
+        private final String accessToken;
+
+        public LoginResponseData(String accessToken) {
+            this.accessToken = accessToken;
+        }
+
+        public String getAccessToken() {
+            return accessToken;
+        }
+    }
+
+
+    }
