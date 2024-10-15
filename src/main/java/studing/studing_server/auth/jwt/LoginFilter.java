@@ -4,14 +4,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import studing.studing_server.common.dto.ErrorResponse;
 import studing.studing_server.common.dto.SuccessMessage;
 import studing.studing_server.common.dto.SuccessStatusResponse;
+import studing.studing_server.common.exception.message.ErrorMessage;
 import studing.studing_server.member.dto.CustomMemberDetails;
 
 import java.io.IOException;
@@ -88,9 +91,24 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     //로그인 실패시 실행하는 메소드
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-        System.out.println("no");
-        response.setStatus(401);
+        // 응답 상태 코드 설정 (401 Unauthorized)
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
 
+        // JWT_UNAUTHORIZED_EXCEPTION 메시지 사용
+        ErrorMessage errorMessage = ErrorMessage.JWT_UNAUTHORIZED_EXCEPTION;
+
+        // 실패 응답 객체 생성
+        ErrorResponse errorResponse = ErrorResponse.of(errorMessage.getStatus(), errorMessage.getMessage(), null);
+
+        // 응답 바디에 JSON 형태로 작성
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        try {
+            response.getWriter().write(convertObjectToJson(errorResponse));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
