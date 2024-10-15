@@ -64,12 +64,11 @@ public class SecurityConfig {
     private String[] getPermitAllEndpoints() {
         return new String[]{
                 "/api/v1/member/login",
-                "/login",
-                "/",
-                "/join",
                 "/api/v1/universityData/university",
                 "/api/v1/universityData/department",
-                "/api/v1/member/signup"
+                "/api/v1/member/signup",
+                "/api/v1/member/checkid",
+                "/",
         };
     }
 
