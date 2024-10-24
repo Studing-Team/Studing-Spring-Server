@@ -63,6 +63,7 @@ public class SecurityConfig {
 
     private String[] getPermitAllEndpoints() {
         return new String[]{
+                "/test/**",
                 "/api/v1/member/login",
                 "/api/v1/universityData/university",
                 "/api/v1/universityData/department",
