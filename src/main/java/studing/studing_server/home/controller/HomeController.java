@@ -28,13 +28,7 @@ public class HomeController {
 
     @GetMapping("/logo")
     public ResponseEntity<SuccessStatusResponse<LogoResponse>> getLogoWithName(HttpServletRequest request) {
-
-        // JWT 토큰에서 loginIdentifier 추출
-        String authorization = request.getHeader("Authorization");
-        String token = authorization.split(" ")[1];
-        String loginIdentifier = jwtUtil.getLoginIdentifier(token);
-
-        // HomeService를 통해 로고 및 이름 데이터를 가져옴
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
         LogoResponse logoResponse = homeService.getLogoWithName(loginIdentifier);
 
         return ResponseEntity
