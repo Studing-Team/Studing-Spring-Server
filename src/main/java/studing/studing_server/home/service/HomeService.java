@@ -45,10 +45,10 @@ public class HomeService {
         Department department = departmentRepository.findByDepartmentNameAndUniversity_UniversityName(member.getMemberDepartment(), university.getUniversityName())
                 .orElseThrow(() -> new IllegalArgumentException("해당 학과를 찾을 수 없습니다."));
 
-        // 로고 및 이름 정보 반환
+
         return new LogoResponse(
                 university.getUniversityLogoImage(),
-                university.getUniversityName(),
+                "총학생회",
                 collegeDepartment.getCollegeDepartmentLogoImage(),
                 collegeDepartment.getCollegeDepartmentName(),
                 department.getDepartmentImage(),
