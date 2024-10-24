@@ -47,9 +47,9 @@ public class SecurityConfig {
                 .httpBasic((auth) -> auth.disable());
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers(getPermitAllEndpoints()).permitAll()
-                        .requestMatchers("/admin").hasRole("ADMIN")
-                        .anyRequest().authenticated());
+                        .requestMatchers(getPermitAllEndpoints()).permitAll() // 명시된 경로는 모든 사용자에게 허용
+                        .requestMatchers("/admin").hasAnyRole("UNIVERSITY", "COLLEGE", "DEPARTMENT") // "/admin" 경로에 대한 권한 설정
+                        .anyRequest().hasAnyRole("USER", "UNIVERSITY", "COLLEGE", "DEPARTMENT")); // 그 외 모든 경로는 권한 필요
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         http
