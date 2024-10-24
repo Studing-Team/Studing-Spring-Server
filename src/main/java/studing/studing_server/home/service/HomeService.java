@@ -58,11 +58,9 @@ public class HomeService {
     }
 
     public MemberDataResponse getMyData(String loginIdentifier) {
-        // Member 테이블에서 사용자의 데이터를 조회
         Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
-        // Member 정보를 기반으로 MemberDataResponse 생성
         return new MemberDataResponse(
                 member.getAdmissionNumber(),
                 member.getName(),

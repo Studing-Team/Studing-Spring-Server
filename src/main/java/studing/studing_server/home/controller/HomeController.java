@@ -40,7 +40,6 @@ public class HomeController {
 
     @GetMapping("/mydata")
     public ResponseEntity<SuccessStatusResponse<MemberDataResponse>> getMyData(HttpServletRequest request) {
-        // JWT 토큰에서 loginIdentifier 추출
         String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
 
         // HomeService에서 Member 데이터를 조회
