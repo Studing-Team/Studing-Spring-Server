@@ -32,23 +32,20 @@ public class MemberService {
     public void signUp(MemberCreateRequest memberCreateRequest) {
         String imageUrl = uploadStudentCardImage(memberCreateRequest.studentCardImage());
 
-
-
-        // departmentName 기반으로 department 조회
-        Department department = departmentRepository.findByDepartmentName(memberCreateRequest.memberDepartment())
-                .orElseThrow(() -> new IllegalArgumentException("사용자가 입력한 학과가 잘못 되었습니다."));
+        // departmentName과 memberUniversity 기반으로 department 조회
+        Department department = departmentRepository
+                .findByDepartmentNameAndUniversity_UniversityName(
+                        memberCreateRequest.memberDepartment(),
+                        memberCreateRequest.memberUniversity()
+                )
+                .orElseThrow(() -> new IllegalArgumentException("사용자가 입력한 학과 또는 대학이 잘못되었습니다."));
 
         // 조회한 department로부터 collegeDepartmentName 조회
         String memberCollegeDepartment = department.getCollegeDepartment().getCollegeDepartmentName();
 
         Member member = createMember(memberCreateRequest, imageUrl, memberCollegeDepartment);
 
-
         memberRepository.save(member);
-
-
-
-
     }
 
     private String uploadStudentCardImage(MultipartFile studentCardImage) {
