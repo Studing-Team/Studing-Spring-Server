@@ -14,6 +14,7 @@ import studing.studing_server.auth.jwt.JWTUtil;
 import studing.studing_server.common.dto.SuccessMessage;
 import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.home.dto.LogoResponse;
+import studing.studing_server.home.dto.MemberDataResponse;
 import studing.studing_server.home.service.HomeService;
 
 
@@ -35,6 +36,26 @@ public class HomeController {
                 .status(HttpStatus.CREATED)
                 .body(SuccessStatusResponse.of(SuccessMessage.LOGO_FETCH_SUCCESS, logoResponse));
     }
+
+
+    @GetMapping("/mydata")
+    public ResponseEntity<SuccessStatusResponse<MemberDataResponse>> getMyData(HttpServletRequest request) {
+        // JWT 토큰에서 loginIdentifier 추출
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+
+        // HomeService에서 Member 데이터를 조회
+        MemberDataResponse memberDataResponse = homeService.getMyData(loginIdentifier);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SuccessStatusResponse.of(SuccessMessage.DATA_FETCH_SUCCESS, memberDataResponse));
+    }
+
+
+
+
+
+
 
 
 }

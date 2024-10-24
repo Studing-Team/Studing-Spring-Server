@@ -2,6 +2,7 @@ package studing.studing_server.home.service;
 
 import org.springframework.stereotype.Service;
 import studing.studing_server.home.dto.LogoResponse;
+import studing.studing_server.home.dto.MemberDataResponse;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.universityData.entity.CollegeDepartment;
@@ -55,4 +56,30 @@ public class HomeService {
                 department.getDepartmentName()
         );
     }
+
+    public MemberDataResponse getMyData(String loginIdentifier) {
+        // Member 테이블에서 사용자의 데이터를 조회
+        Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // Member 정보를 기반으로 MemberDataResponse 생성
+        return new MemberDataResponse(
+                member.getAdmissionNumber(),
+                member.getName(),
+                member.getMemberUniversity(),
+                member.getMemberDepartment(),
+                member.getRole()
+        );
+    }
+
+
+
+
+
+
+
+
+
+
+
 }
