@@ -31,6 +31,7 @@ public class Notice {
 
     private  String title;
     private String content;
+    private  String tag;
     private Long noticeLike = 0L;
     private Long viewCount = 0L;
     private Long saveCount = 0L;
@@ -52,10 +53,11 @@ public class Notice {
     private List<NoticeLike> noticeLikes;
 
     @Builder
-    public Notice(String title, String content, Member member, String contentSummary, String category) {
+    public Notice(String title, String content, Member member, String tag) {
         this.title = title;
         this.content = content;
         this.member = member;
+        this.tag=tag;
         this.noticeLike = 0L;
         this.viewCount = 0L;
         this.saveCount=0L;

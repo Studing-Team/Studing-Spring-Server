@@ -47,11 +47,10 @@ public class NoticeService {
     }
 
 
-
-
     private Notice saveNotice(NoticeCreateRequest request, Member member) {
         Notice notice = Notice.builder()
                 .title(request.title())
+                .tag(request.tag())
                 .content(request.content())
                 .member(member)
                 .build();

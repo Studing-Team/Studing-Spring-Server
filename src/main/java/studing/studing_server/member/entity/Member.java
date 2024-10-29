@@ -1,15 +1,23 @@
 package studing.studing_server.member.entity;
 
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import studing.studing_server.common.BaseTimeEntity;
+import studing.studing_server.notices.entity.Notice;
+import studing.studing_server.notices.entity.NoticeLike;
+import studing.studing_server.notices.entity.NoticeView;
+import studing.studing_server.notices.entity.SaveNotice;
+
 @Entity
 @Getter
 @Setter
@@ -39,6 +47,21 @@ public class Member extends BaseTimeEntity {
     private String memberDepartment;
 
     private String  role;
+
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notice> notices;
+
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NoticeLike> noticeLikes;
+
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SaveNotice> saveNotices;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NoticeView> noticeView;
 
 
     @Builder

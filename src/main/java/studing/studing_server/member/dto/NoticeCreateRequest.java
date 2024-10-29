@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 public record NoticeCreateRequest(
         String title,
         String content,
+        String tag,
         List<MultipartFile> noticeImages
 ) {
 }
