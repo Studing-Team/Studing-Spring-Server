@@ -7,15 +7,18 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 import studing.studing_server.member.dto.CustomMemberDetails;
 import studing.studing_server.member.entity.Member;
 
 import java.io.IOException;
+import studing.studing_server.member.repository.MemberRepository;
 
 public class JWTFilter extends OncePerRequestFilter {
 
     private final JWTUtil jwtUtil;
+
 
     public JWTFilter(JWTUtil jwtUtil) {
 
@@ -47,6 +50,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String username = jwtUtil.getLoginIdentifier(token);
         String role = jwtUtil.getRole(token);
+
 
         Member member = new Member();
         member.setLoginIdentifier(username);

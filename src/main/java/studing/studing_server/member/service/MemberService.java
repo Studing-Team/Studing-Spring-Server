@@ -60,8 +60,6 @@ public class MemberService {
     private Member createMember(MemberCreateRequest request, String imageUrl, String memberCollegeDepartment) {
        String hashedPassword = bCryptPasswordEncoder.encode(request.password());
 
-
-
         return Member.builder()
                 .admissionNumber(request.admissionNumber())
                 .name(request.name())
