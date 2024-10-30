@@ -10,6 +10,8 @@ import jakarta.persistence.ManyToOne;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 
 @NoArgsConstructor
@@ -23,6 +25,7 @@ public class NoticeImage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notice_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Notice notice;
 
     @Builder

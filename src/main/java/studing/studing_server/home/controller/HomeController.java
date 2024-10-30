@@ -15,6 +15,7 @@ import studing.studing_server.common.dto.SuccessMessage;
 import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.home.dto.LogoResponse;
 import studing.studing_server.home.dto.MemberDataResponse;
+import studing.studing_server.home.dto.UnreadCategoryResponse;
 import studing.studing_server.home.service.HomeService;
 
 
@@ -49,6 +50,22 @@ public class HomeController {
                 .status(HttpStatus.OK)
                 .body(SuccessStatusResponse.of(SuccessMessage.DATA_FETCH_SUCCESS, memberDataResponse));
     }
+
+
+
+    @GetMapping("/unread-categories")
+    public ResponseEntity<SuccessStatusResponse<UnreadCategoryResponse>> getUnreadCategories(
+            HttpServletRequest request) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        UnreadCategoryResponse unreadCategories = homeService.getUnreadCategories(loginIdentifier);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(
+                        SuccessMessage.UNREAD_CATEGORIES_FETCH_SUCCESS,
+                        unreadCategories));
+    }
+
 
 
 

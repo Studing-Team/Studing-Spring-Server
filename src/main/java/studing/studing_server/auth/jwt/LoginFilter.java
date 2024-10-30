@@ -67,7 +67,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 60*60*60*10L);
+        String token = jwtUtil.createJwt(username, role, 60*60*60*60*60*10L);
 
         // JWT 토큰을 응답 헤더에 추가하는 대신, 응답 바디의 data에 포함
         LoginResponseData loginData = new LoginResponseData(token);
