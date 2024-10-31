@@ -16,13 +16,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import studing.studing_server.common.BaseTimeEntity;
 import studing.studing_server.member.entity.Member;
 
 @Entity
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class Notice {
+public class Notice extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

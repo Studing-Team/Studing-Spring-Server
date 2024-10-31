@@ -1,5 +1,6 @@
 package studing.studing_server.home.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -85,13 +86,20 @@ public class HomeService {
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
+
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+
         // 2. 현재 사용자와 같은 대학교의 모든 공지사항 조회 (수정된 부분)
-        List<Notice> allNotices = noticeRepository.findAllByMemberUniversity(
-                currentMember.getMemberUniversity());
+        // 3. 현재 사용자와 같은 대학교의 일주일 이내 공지사항 조회
+        List<Notice> recentNotices = noticeRepository.findAllByMemberUniversityAndCreatedAtAfter(
+                currentMember.getMemberUniversity(),
+                oneWeekAgo);
+
+
         // 3. 읽지 않은 공지사항이 있는 카테고리(단과대) 목록 수집
         Set<String> unreadCategories = new HashSet<>();
 
-        for (Notice notice : allNotices) {
+        for (Notice notice : recentNotices) {
             // 해당 공지사항에 대한 사용자의 조회 기록 확인
             Optional<NoticeView> noticeView = noticeViewRepository.findByNoticeAndMember(notice, currentMember);
 
@@ -105,19 +113,16 @@ public class HomeService {
             if (!hasUnread) {
                 Member noticeWriter = notice.getMember();
 
-                // 같은 대학교인 경우
-                if (currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
-                    unreadCategories.add("총학생회");
-                }
-
-                // 같은 단과대학인 경우
-                if (currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
-                    unreadCategories.add(noticeWriter.getMemberCollegeDepartment());
-                }
-
-                // 같은 학과인 경우
-                if (currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
-                    unreadCategories.add(noticeWriter.getMemberDepartment());
+                switch (noticeWriter.getRole()) {
+                    case "ROLE_UNIVERSITY":
+                        unreadCategories.add("총학생회");
+                        break;
+                    case "ROLE_COLLEGE":
+                        unreadCategories.add(noticeWriter.getMemberCollegeDepartment());
+                        break;
+                    case "ROLE_DEPARTMENT":
+                        unreadCategories.add(noticeWriter.getMemberDepartment());
+                        break;
                 }
             }
         }
