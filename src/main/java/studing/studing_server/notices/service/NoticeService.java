@@ -24,7 +24,9 @@ import studing.studing_server.notices.dto.NoticeResponse2;
 import studing.studing_server.notices.dto.RecentNoticesResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse2;
 import studing.studing_server.notices.dto.SavedNoticeResponse;
+import studing.studing_server.notices.dto.SavedNoticeResponse2;
 import studing.studing_server.notices.dto.SavedNoticesResponse;
+import studing.studing_server.notices.dto.SavedNoticesResponse2;
 import studing.studing_server.notices.entity.Notice;
 import studing.studing_server.notices.entity.NoticeImage;
 import studing.studing_server.notices.entity.NoticeLike;
@@ -594,6 +596,82 @@ public class NoticeService {
 
         return new SavedNoticesResponse(noticeResponses);
     }
+
+
+    @Transactional(readOnly = true)
+    public SavedNoticesResponse2 getSavedNoticesByCategory(String loginIdentifier, String categorie) {
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        List<SaveNotice> savedNotices = saveNoticeRepository
+                .findByMemberIdOrderByNoticeCreatedAtDesc(currentMember.getId());
+
+        List<SavedNoticeResponse2> noticeResponses = new ArrayList<>();
+
+        for (SaveNotice savedNotice : savedNotices) {
+            Notice notice = savedNotice.getNotice();
+            Member noticeWriter = notice.getMember();
+            boolean matches = false;
+            String affiliation = "";
+
+            if ("전체".equals(categorie)) {
+                matches = true;
+                if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())) {
+                    affiliation = "총학생회";
+                } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())) {
+                    affiliation = noticeWriter.getMemberCollegeDepartment();
+                } else if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())) {
+                    affiliation = noticeWriter.getMemberDepartment();
+                }
+            } else {
+                switch(categorie) {
+                    case "총학생회":
+                        if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())) {
+                            matches = true;
+                            affiliation = "총학생회";
+                        }
+                        break;
+
+                    case "단과대":
+                        if ("ROLE_COLLEGE".equals(noticeWriter.getRole())) {
+                            matches = true;
+                            affiliation = noticeWriter.getMemberCollegeDepartment();
+                        }
+                        break;
+
+                    case "학과":
+                        if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())) {
+                            matches = true;
+                            affiliation = noticeWriter.getMemberDepartment();
+                        }
+                        break;
+
+                    default:
+                        throw new IllegalArgumentException("잘못된 카테고리입니다. '전체', '총학생회', '단과대', '학과' 중 하나를 입력해주세요.");
+                }
+            }
+
+            if (matches) {
+                noticeResponses.add(new SavedNoticeResponse2(
+                        notice.getId(),
+
+                        notice.getTitle(),
+
+                        notice.getCreatedAt(),
+                        true  // 저장된 공지사항이므로 항상 true
+                ));
+            }
+        }
+
+        return new SavedNoticesResponse2(noticeResponses);
+    }
+
+
+
+
+
+
+
 
 
 }

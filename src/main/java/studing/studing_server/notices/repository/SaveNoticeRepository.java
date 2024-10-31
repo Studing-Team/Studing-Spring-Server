@@ -16,7 +16,7 @@ public interface SaveNoticeRepository extends JpaRepository<SaveNotice, Long> {
 
 
     List<SaveNotice> findTop5ByMemberIdOrderByNoticeCreatedAtDesc(Long memberId);
-
+    List<SaveNotice> findByMemberIdOrderByNoticeCreatedAtDesc(Long memberId);
 
 
 }

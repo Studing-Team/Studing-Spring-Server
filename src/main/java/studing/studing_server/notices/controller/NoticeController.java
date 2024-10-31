@@ -21,6 +21,7 @@ import studing.studing_server.notices.dto.NoticeDetailResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse2;
 import studing.studing_server.notices.dto.SavedNoticesResponse;
+import studing.studing_server.notices.dto.SavedNoticesResponse2;
 import studing.studing_server.notices.service.NoticeService;
 
 @RestController
@@ -151,7 +152,17 @@ public class NoticeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.SAVED_NOTICES_FETCH_SUCCESS, response));
     }
 
+    @PostMapping("/save-category")
+    public ResponseEntity<SuccessStatusResponse<SavedNoticesResponse2>> getSavedNoticesByCategory(
+            HttpServletRequest request,
+            @RequestBody UnreadNoticeCountRequest categorieRequest) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        SavedNoticesResponse2 response = noticeService.getSavedNoticesByCategory(loginIdentifier, categorieRequest.categorie());
 
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.SAVED_NOTICES_BY_CATEGORY_SUCCESS, response));
+    }
 
 
 }
