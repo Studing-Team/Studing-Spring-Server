@@ -38,5 +38,7 @@ public interface NoticeRepository extends JpaRepository<Notice, Long> {
     List<Notice> findTop5ByMember_MemberUniversityOrderByCreatedAtDesc(String memberUniversity);
 
 
+    List<Notice> findByMember_MemberUniversityOrderByCreatedAtDesc(String universityName);
+
 
 }

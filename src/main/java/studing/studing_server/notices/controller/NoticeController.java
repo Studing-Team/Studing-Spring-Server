@@ -48,6 +48,18 @@ public class NoticeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.RECENT_NOTICES_FETCH_SUCCESS, response));
     }
 
+    @PostMapping("/all")
+    public ResponseEntity<SuccessStatusResponse<RecentNoticesResponse>> getAllNotices(
+            HttpServletRequest request,
+            @RequestBody UnreadNoticeCountRequest categorieRequest) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        RecentNoticesResponse response = noticeService.getAllNotices(loginIdentifier, categorieRequest.categorie());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.ALL_NOTICES_FETCH_SUCCESS, response));
+    }
+
 
 
 
