@@ -22,6 +22,7 @@ import studing.studing_server.notices.dto.RecentNoticesResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse2;
 import studing.studing_server.notices.entity.Notice;
 import studing.studing_server.notices.entity.NoticeImage;
+import studing.studing_server.notices.entity.NoticeLike;
 import studing.studing_server.notices.entity.NoticeView;
 import studing.studing_server.notices.entity.SaveNotice;
 import studing.studing_server.notices.repository.NoticeImageRepository;
@@ -410,5 +411,58 @@ public class NoticeService {
         notice.setSaveCount(notice.getSaveCount() - 1);
         noticeRepository.save(notice);
     }
+
+    // NoticeService에 추가
+    @Transactional
+    public void likeNotice(String loginIdentifier, Long noticeId) {
+        // 현재 사용자 조회
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        // 이미 좋아요한 공지인지 확인
+        if (noticeLikeRepository.existsByMemberIdAndNoticeId(currentMember.getId(), noticeId)) {
+            throw new IllegalStateException("이미 좋아요한 공지사항입니다.");
+        }
+
+        // NoticeLike 생성 및 저장
+        NoticeLike noticeLike = NoticeLike.builder()
+                .notice(notice)
+                .member(currentMember)
+                .build();
+        noticeLikeRepository.save(noticeLike);
+
+        // 공지사항의 좋아요 수 증가
+        notice.setNoticeLike(notice.getNoticeLike() + 1);
+        noticeRepository.save(notice);
+    }
+
+    @Transactional
+    public void cancelLikeNotice(String loginIdentifier, Long noticeId) {
+        // 현재 사용자 조회
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        // 좋아요한 공지인지 확인
+        NoticeLike noticeLike = noticeLikeRepository.findByMemberIdAndNoticeId(currentMember.getId(), noticeId)
+                .orElseThrow(() -> new IllegalStateException("좋아요하지 않은 공지사항입니다."));
+
+        // NoticeLike 삭제
+        noticeLikeRepository.delete(noticeLike);
+
+        // 공지사항의 좋아요 수 감소
+        notice.setNoticeLike(notice.getNoticeLike() - 1);
+        noticeRepository.save(notice);
+    }
+
+
+
 
 }

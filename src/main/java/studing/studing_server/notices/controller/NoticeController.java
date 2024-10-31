@@ -101,6 +101,30 @@ public class NoticeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_SAVE_CANCEL_SUCCESS));
     }
 
+    @PostMapping("/like/{noticeId}")
+    public ResponseEntity<SuccessStatusResponse<Void>> likeNotice(
+            HttpServletRequest request,
+            @PathVariable Long noticeId) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        noticeService.likeNotice(loginIdentifier, noticeId);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_LIKE_SUCCESS));
+    }
+
+
+    @DeleteMapping("/like/{noticeId}")
+    public ResponseEntity<SuccessStatusResponse<Void>> cancelLikeNotice(
+            HttpServletRequest request,
+            @PathVariable Long noticeId) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        noticeService.cancelLikeNotice(loginIdentifier, noticeId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_LIKE_CANCEL_SUCCESS));
+    }
 
 
 }
