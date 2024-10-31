@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,6 +73,21 @@ public class NoticeController {
                 .status(HttpStatus.CREATED)
                 .body(SuccessStatusResponse.of(SuccessMessage.ALL_CATEGORY_NOTICES_FETCH_SUCCESS, response));
     }
+
+
+
+    @PostMapping("/save/{noticeId}")
+    public ResponseEntity<SuccessStatusResponse<Void>> saveNotice(
+            HttpServletRequest request,
+            @PathVariable Long noticeId) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        noticeService.saveNotice(loginIdentifier, noticeId);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_SAVE_SUCCESS));
+    }
+
 
 
 }

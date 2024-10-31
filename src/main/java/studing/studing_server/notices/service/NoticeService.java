@@ -23,6 +23,7 @@ import studing.studing_server.notices.dto.RecentNoticesResponse2;
 import studing.studing_server.notices.entity.Notice;
 import studing.studing_server.notices.entity.NoticeImage;
 import studing.studing_server.notices.entity.NoticeView;
+import studing.studing_server.notices.entity.SaveNotice;
 import studing.studing_server.notices.repository.NoticeImageRepository;
 import studing.studing_server.notices.repository.NoticeLikeRepository;
 import studing.studing_server.notices.repository.NoticeRepository;
@@ -360,6 +361,32 @@ public class NoticeService {
 
 
 
+    @Transactional
+    public void saveNotice(String loginIdentifier, Long noticeId) {
+        // 현재 사용자 조회
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        // 이미 저장한 공지인지 확인
+        if (saveNoticeRepository.existsByMemberIdAndNoticeId(currentMember.getId(), noticeId)) {
+            throw new IllegalStateException("이미 저장한 공지사항입니다.");
+        }
+
+        // SaveNotice 생성 및 저장
+        SaveNotice saveNotice = SaveNotice.builder()
+                .notice(notice)
+                .member(currentMember)
+                .build();
+        saveNoticeRepository.save(saveNotice);
+
+        // 공지사항의 저장 수 증가
+        notice.setSaveCount(notice.getSaveCount() + 1);
+        noticeRepository.save(notice);
+    }
 
 
 
