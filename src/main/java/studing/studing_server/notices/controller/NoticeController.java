@@ -22,6 +22,7 @@ import studing.studing_server.notices.dto.RecentNoticesResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse2;
 import studing.studing_server.notices.dto.SavedNoticesResponse;
 import studing.studing_server.notices.dto.SavedNoticesResponse2;
+import studing.studing_server.notices.dto.UnreadNoticesResponse;
 import studing.studing_server.notices.service.NoticeService;
 
 @RestController
@@ -174,6 +175,19 @@ public class NoticeController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_VIEW_CHECK_SUCCESS));
+    }
+
+    // NoticeController에 추가
+    @PostMapping("/unread/all")
+    public ResponseEntity<SuccessStatusResponse<UnreadNoticesResponse>> getAllUnreadNotices(
+            HttpServletRequest request,
+            @RequestBody UnreadNoticeCountRequest categorieRequest) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        UnreadNoticesResponse response = noticeService.getAllUnreadNotices(loginIdentifier, categorieRequest.categorie());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.UNREAD_NOTICES_FETCH_SUCCESS, response));
     }
 
 

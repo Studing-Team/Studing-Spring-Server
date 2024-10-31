@@ -27,6 +27,8 @@ import studing.studing_server.notices.dto.SavedNoticeResponse;
 import studing.studing_server.notices.dto.SavedNoticeResponse2;
 import studing.studing_server.notices.dto.SavedNoticesResponse;
 import studing.studing_server.notices.dto.SavedNoticesResponse2;
+import studing.studing_server.notices.dto.UnreadNoticeResponse;
+import studing.studing_server.notices.dto.UnreadNoticesResponse;
 import studing.studing_server.notices.entity.Notice;
 import studing.studing_server.notices.entity.NoticeImage;
 import studing.studing_server.notices.entity.NoticeLike;
@@ -692,7 +694,132 @@ public class NoticeService {
     }
 
 
+    // NoticeService에 추가
+    @Transactional(readOnly = true)
+    public UnreadNoticesResponse getAllUnreadNotices(String loginIdentifier, String categorie) {
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
+        List<Notice> notices = noticeRepository.findByMember_MemberUniversityOrderByCreatedAtDesc(
+                currentMember.getMemberUniversity()
+        );
+
+        List<UnreadNoticeResponse> unreadNotices = new ArrayList<>();
+
+        for (Notice notice : notices) {
+            Member noticeWriter = notice.getMember();
+            boolean matches = false;
+            String affiliationName = "";
+            String logoImage = "";
+
+            // 읽지 않은 공지인지 확인
+            Optional<NoticeView> noticeView = noticeViewRepository.findByMemberIdAndNoticeId(
+                    currentMember.getId(),
+                    notice.getId()
+            );
+
+            boolean isUnread = noticeView.map(nv -> !nv.isReadAt()).orElse(true);
+
+            if (!isUnread) {
+                continue; // 이미 읽은 공지는 건너뛰기
+            }
+
+            if ("전체".equals(categorie)) {
+                if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
+                        && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
+                    matches = true;
+                    affiliationName = "총학생회";
+                    logoImage = getUniversityLogo(noticeWriter);
+                } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
+                        && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
+                    matches = true;
+                    affiliationName = noticeWriter.getMemberCollegeDepartment();
+                    logoImage = getCollegeLogo(noticeWriter);
+                } else if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
+                        && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
+                    matches = true;
+                    affiliationName = noticeWriter.getMemberDepartment();
+                    logoImage = getDepartmentLogo(noticeWriter);
+                }
+            } else {
+                switch(categorie) {
+                    case "총학생회":
+                        if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
+                                && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
+                            matches = true;
+                            affiliationName = "총학생회";
+                            logoImage = getUniversityLogo(noticeWriter);
+                        }
+                        break;
+
+                    case "단과대":
+                        if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
+                                && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
+                            matches = true;
+                            affiliationName = noticeWriter.getMemberCollegeDepartment();
+                            logoImage = getCollegeLogo(noticeWriter);
+                        }
+                        break;
+
+                    case "학과":
+                        if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
+                                && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
+                            matches = true;
+                            affiliationName = noticeWriter.getMemberDepartment();
+                            logoImage = getDepartmentLogo(noticeWriter);
+                        }
+                        break;
+                }
+            }
+
+            if (matches) {
+                List<String> images = notice.getNoticeImages().stream()
+                        .map(NoticeImage::getNoticeImage)
+                        .collect(Collectors.toList());
+
+                unreadNotices.add(new UnreadNoticeResponse(
+                        notice.getId(),
+                        notice.getTitle(),
+                        notice.getContent(),
+                        notice.getNoticeLike(),
+                        notice.getSaveCount(),
+                        notice.getViewCount(),
+                        notice.getCreatedAt(),
+                        affiliationName,
+                        logoImage,
+                        notice.getTag(),
+                        images
+                ));
+            }
+        }
+
+        return new UnreadNoticesResponse(unreadNotices);
+    }
+
+    // 로고 이미지 조회 헬퍼 메서드들
+    private String getUniversityLogo(Member writer) {
+        return universityDataRepository.findByUniversityName(writer.getMemberUniversity())
+                .map(University::getUniversityLogoImage)
+                .orElse("");
+    }
+
+    private String getCollegeLogo(Member writer) {
+        return collegeDepartmentRepository
+                .findByCollegeDepartmentNameAndUniversity_UniversityName(
+                        writer.getMemberCollegeDepartment(),
+                        writer.getMemberUniversity())
+                .map(CollegeDepartment::getCollegeDepartmentLogoImage)
+                .orElse("");
+    }
+
+    private String getDepartmentLogo(Member writer) {
+        return departmentRepository
+                .findByDepartmentNameAndUniversity_UniversityName(
+                        writer.getMemberDepartment(),
+                        writer.getMemberUniversity())
+                .map(Department::getDepartmentImage)
+                .orElse("");
+    }
 
 
 
