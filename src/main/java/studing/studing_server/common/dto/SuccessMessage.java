@@ -17,6 +17,7 @@ public enum SuccessMessage {
     DATA_FETCH_SUCCESS(HttpStatus.OK.value(),"회원 데이터 조회에 성공하였습니다."),
 //    JWT_LOGIN_SUCCESS(HttpStatus.UNAUTHORIZED.value(), "가입된 계정이 없습니다 아이디와 비밀번호를 다시 확인해주세요."),
     CREATE_NOTICE_SUCCESS(HttpStatus.CREATED.value(),"공지작성에 성공하였습니다."),
+    NOTICE_COUNT_FETCH_SUCCESS(HttpStatus.CREATED.value(), "전체 공지 조회에 성공하였습니다."),
     UNREAD_CATEGORIES_FETCH_SUCCESS(HttpStatus.CREATED.value(), "읽지않은 카테고리 명 데이터 조회에 성공하였습니다."),
 //    LIKE_NOTICE_SUCCESS(HttpStatus.CREATED.value(),"공지 좋아요에 성공하였습니다."),
 //    LIKE_CANCLE_NOTICE_SUCCESS(HttpStatus.CREATED.value(),"공지 좋아요 취소에 성공하였습니다."),

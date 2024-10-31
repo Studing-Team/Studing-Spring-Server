@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import studing.studing_server.home.dto.LogoResponse;
 import studing.studing_server.home.dto.MemberDataResponse;
 import studing.studing_server.home.dto.UnreadCategoryResponse;
+import studing.studing_server.home.dto.UnreadNoticeCountResponse;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.notices.entity.Notice;
@@ -82,25 +83,19 @@ public class HomeService {
 
     @Transactional(readOnly = true)
     public UnreadCategoryResponse getUnreadCategories(String loginIdentifier) {
-        // 1. 현재 로그인한 사용자 정보 조회
+
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
-
         LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
 
-        // 2. 현재 사용자와 같은 대학교의 모든 공지사항 조회 (수정된 부분)
-        // 3. 현재 사용자와 같은 대학교의 일주일 이내 공지사항 조회
         List<Notice> recentNotices = noticeRepository.findAllByMemberUniversityAndCreatedAtAfter(
                 currentMember.getMemberUniversity(),
                 oneWeekAgo);
 
-
-        // 3. 읽지 않은 공지사항이 있는 카테고리(단과대) 목록 수집
         Set<String> unreadCategories = new HashSet<>();
 
         for (Notice notice : recentNotices) {
-            // 해당 공지사항에 대한 사용자의 조회 기록 확인
             Optional<NoticeView> noticeView = noticeViewRepository.findByNoticeAndMember(notice, currentMember);
 
             boolean hasUnread;
@@ -130,6 +125,63 @@ public class HomeService {
 
         List<String> categoryList = new ArrayList<>(unreadCategories);
         return new UnreadCategoryResponse(categoryList);
+    }
+
+    @Transactional(readOnly = true)
+    public UnreadNoticeCountResponse getUnreadNoticeCount(String loginIdentifier, String categorie) {
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+
+        List<Notice> recentNotices = noticeRepository.findAllByMemberUniversityAndCreatedAtAfter(
+                currentMember.getMemberUniversity(),
+                oneWeekAgo);
+
+        long count = 0;
+
+        for (Notice notice : recentNotices) {
+            Optional<NoticeView> noticeView = noticeViewRepository.findByNoticeAndMember(notice, currentMember);
+
+            boolean hasUnread;
+            if (noticeView.isPresent()) {
+                hasUnread = noticeView.get().isReadAt();
+            } else {
+                hasUnread = true;
+            }
+
+            if (!hasUnread) {
+                Member noticeWriter = notice.getMember();
+
+                switch(categorie) {
+                    case "총학생회":
+                        if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
+                                && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
+                            count++;
+                        }
+                        break;
+
+                    case "단과대":
+                        if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
+                                && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
+                            count++;
+                        }
+                        break;
+
+                    case "학과":
+                        if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
+                                && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
+                            count++;
+                        }
+                        break;
+
+                    default:
+                        throw new IllegalArgumentException("잘못된 카테고리입니다. '총학생회', '단과대', '학과' 중 하나를 입력해주세요.");
+                }
+            }
+        }
+
+        return new UnreadNoticeCountResponse(count);
     }
 
 

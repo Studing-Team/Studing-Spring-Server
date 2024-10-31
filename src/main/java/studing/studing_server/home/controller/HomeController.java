@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import studing.studing_server.auth.jwt.JWTUtil;
@@ -16,6 +18,8 @@ import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.home.dto.LogoResponse;
 import studing.studing_server.home.dto.MemberDataResponse;
 import studing.studing_server.home.dto.UnreadCategoryResponse;
+import studing.studing_server.home.dto.UnreadNoticeCountRequest;
+import studing.studing_server.home.dto.UnreadNoticeCountResponse;
 import studing.studing_server.home.service.HomeService;
 
 
@@ -67,7 +71,18 @@ public class HomeController {
     }
 
 
+    @PostMapping("/unread-notice-count")
+    public ResponseEntity<SuccessStatusResponse<UnreadNoticeCountResponse>> getUnreadNoticeCount(
+            HttpServletRequest request,
+            @RequestBody UnreadNoticeCountRequest unreadRequest) {
 
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        UnreadNoticeCountResponse response = homeService.getUnreadNoticeCount(loginIdentifier, unreadRequest.categorie());
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_COUNT_FETCH_SUCCESS, response));
+    }
 
 
 
