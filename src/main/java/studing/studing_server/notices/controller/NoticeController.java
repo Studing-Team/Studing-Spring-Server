@@ -20,6 +20,7 @@ import studing.studing_server.member.dto.NoticeCreateRequest;
 import studing.studing_server.notices.dto.NoticeDetailResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse2;
+import studing.studing_server.notices.dto.SavedNoticesResponse;
 import studing.studing_server.notices.service.NoticeService;
 
 @RestController
@@ -139,7 +140,16 @@ public class NoticeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_DETAIL_FETCH_SUCCESS, response));
     }
 
+    @GetMapping("/save")
+    public ResponseEntity<SuccessStatusResponse<SavedNoticesResponse>> getSavedNotices(
+            HttpServletRequest request) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        SavedNoticesResponse response = noticeService.getSavedNotices(loginIdentifier);
 
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.SAVED_NOTICES_FETCH_SUCCESS, response));
+    }
 
 
 
