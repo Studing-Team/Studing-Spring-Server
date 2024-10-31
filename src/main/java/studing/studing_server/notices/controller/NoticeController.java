@@ -17,6 +17,7 @@ import studing.studing_server.common.dto.SuccessMessage;
 import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.home.dto.UnreadNoticeCountRequest;
 import studing.studing_server.member.dto.NoticeCreateRequest;
+import studing.studing_server.notices.dto.NoticeDetailResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse2;
 import studing.studing_server.notices.service.NoticeService;
@@ -125,6 +126,22 @@ public class NoticeController {
                 .status(HttpStatus.OK)
                 .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_LIKE_CANCEL_SUCCESS));
     }
+
+    @GetMapping("/{noticeId}")
+    public ResponseEntity<SuccessStatusResponse<NoticeDetailResponse>> getNoticeDetail(
+            HttpServletRequest request,
+            @PathVariable Long noticeId) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        NoticeDetailResponse response = noticeService.getNoticeDetail(loginIdentifier, noticeId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_DETAIL_FETCH_SUCCESS, response));
+    }
+
+
+
+
 
 
 }

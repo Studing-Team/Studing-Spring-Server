@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,7 @@ import studing.studing_server.member.dto.CustomMemberDetails;
 import studing.studing_server.member.dto.NoticeCreateRequest;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
+import studing.studing_server.notices.dto.NoticeDetailResponse;
 import studing.studing_server.notices.dto.NoticeResponse;
 import studing.studing_server.notices.dto.NoticeResponse2;
 import studing.studing_server.notices.dto.RecentNoticesResponse;
@@ -30,6 +32,12 @@ import studing.studing_server.notices.repository.NoticeLikeRepository;
 import studing.studing_server.notices.repository.NoticeRepository;
 import studing.studing_server.notices.repository.NoticeViewRepository;
 import studing.studing_server.notices.repository.SaveNoticeRepository;
+import studing.studing_server.universityData.entity.CollegeDepartment;
+import studing.studing_server.universityData.entity.Department;
+import studing.studing_server.universityData.entity.University;
+import studing.studing_server.universityData.repository.CollegeDepartmentRepository;
+import studing.studing_server.universityData.repository.DepartmentRepository;
+import studing.studing_server.universityData.repository.UniversityDataRepository;
 
 @Slf4j
 @Service
@@ -41,6 +49,9 @@ public class NoticeService {
     private  final NoticeImageRepository noticeImageRepository;
     private  final SaveNoticeRepository saveNoticeRepository;
     private  final NoticeLikeRepository noticeLikeRepository;
+    private  final CollegeDepartmentRepository collegeDepartmentRepository;
+    private final DepartmentRepository departmentRepository;
+    private final UniversityDataRepository universityDataRepository;
 
     private final S3Service s3Service;
 
@@ -461,6 +472,84 @@ public class NoticeService {
         notice.setNoticeLike(notice.getNoticeLike() - 1);
         noticeRepository.save(notice);
     }
+    // NoticeService에 추가
+    @Transactional(readOnly = true)
+    public NoticeDetailResponse getNoticeDetail(String loginIdentifier, Long noticeId) {
+        // 현재 사용자 조회
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        Member noticeWriter = notice.getMember();
+
+        // 작성자의 소속 정보와 로고 이미지 가져오기
+        String affiliationName;
+        String logoImage;
+
+        if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())) {
+            University university = universityDataRepository.findByUniversityName(noticeWriter.getMemberUniversity())
+                    .orElseThrow(() -> new IllegalArgumentException("대학교 정보를 찾을 수 없습니다."));
+
+            affiliationName = university.getUniversityNickName();
+            logoImage = university.getUniversityLogoImage();
+        } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())) {
+            CollegeDepartment collegeDepartment = collegeDepartmentRepository
+                    .findByCollegeDepartmentNameAndUniversity_UniversityName(
+                            noticeWriter.getMemberCollegeDepartment(),
+                            noticeWriter.getMemberUniversity()
+                    )
+                    .orElseThrow(() -> new IllegalArgumentException("단과대학 정보를 찾을 수 없습니다."));
+            affiliationName = collegeDepartment.getCollegeDepartmentNickName();
+            logoImage = collegeDepartment.getCollegeDepartmentLogoImage();
+        } else {
+            Department department = departmentRepository
+                    .findByDepartmentNameAndUniversity_UniversityName(
+                            noticeWriter.getMemberDepartment(),
+                            noticeWriter.getMemberUniversity()
+                    )
+                    .orElseThrow(() -> new IllegalArgumentException("학과 정보를 찾을 수 없습니다."));
+            affiliationName = department.getDepartmentNickName();
+            logoImage = department.getDepartmentImage();
+        }
+
+        // 저장 여부 확인
+        boolean saveCheck = saveNoticeRepository.existsByMemberIdAndNoticeId(
+                currentMember.getId(),
+                noticeId
+        );
+
+        // 좋아요 여부 확인
+        boolean likeCheck = noticeLikeRepository.existsByMemberIdAndNoticeId(
+                currentMember.getId(),
+                noticeId
+        );
+
+        // 이미지 URL 리스트 생성
+        List<String> images = notice.getNoticeImages().stream()
+                .map(NoticeImage::getNoticeImage)
+                .collect(Collectors.toList());
+
+        return new NoticeDetailResponse(
+                notice.getId(),
+                notice.getTitle(),
+                notice.getContent(),
+                notice.getNoticeLike(),
+                notice.getSaveCount(),
+                notice.getViewCount(),
+                notice.getCreatedAt(),
+                affiliationName,
+                logoImage,
+                notice.getTag(),
+                images,
+                saveCheck,
+                likeCheck
+        );
+    }
+
+
 
 
 
