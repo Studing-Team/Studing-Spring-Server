@@ -30,6 +30,8 @@ public enum SuccessMessage {
     // SuccessMessage에 추가
     NOTICE_VIEW_CHECK_SUCCESS(HttpStatus.CREATED.value(), "공지사항 조회 체크에 성공하였습니다."),
     // SuccessMessage에 추가
+    PARTNERS_FETCH_SUCCESS(HttpStatus.CREATED.value(), "카테고리별 제휴업체 데이터 조회에 성공하였습니다."),
+    // SuccessMessage에 추가
     UNREAD_NOTICES_FETCH_SUCCESS(HttpStatus.CREATED.value(), "카테고리별 놓친 공지 조회에 성공하였습니다."),
     // SuccessMessage에 추가
     SAVED_NOTICES_BY_CATEGORY_SUCCESS(HttpStatus.CREATED.value(), "카테고리별 저장한 공지들 조회에 성공하였습니다."),

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import studing.studing_server.partner.entity.Partner;
 
 @Entity
 @Getter
@@ -23,6 +24,9 @@ public class University {
 
     @OneToMany(mappedBy = "university")
     private List<CollegeDepartment> collegeDepartments;
+
+    @OneToMany(mappedBy = "university")
+    private List<Partner> partners;
 
 
 }
