@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +16,7 @@ import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.home.dto.UnreadNoticeCountRequest;
 import studing.studing_server.member.dto.NoticeCreateRequest;
 import studing.studing_server.notices.dto.RecentNoticesResponse;
+import studing.studing_server.notices.dto.RecentNoticesResponse2;
 import studing.studing_server.notices.service.NoticeService;
 
 @RestController
@@ -48,19 +50,28 @@ public class NoticeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.RECENT_NOTICES_FETCH_SUCCESS, response));
     }
 
-    @PostMapping("/all")
+    @GetMapping("/all")
     public ResponseEntity<SuccessStatusResponse<RecentNoticesResponse>> getAllNotices(
-            HttpServletRequest request,
-            @RequestBody UnreadNoticeCountRequest categorieRequest) {
+            HttpServletRequest request) {
         String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
-        RecentNoticesResponse response = noticeService.getAllNotices(loginIdentifier, categorieRequest.categorie());
+        RecentNoticesResponse response = noticeService.getAllNotices(loginIdentifier);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(SuccessStatusResponse.of(SuccessMessage.ALL_NOTICES_FETCH_SUCCESS, response));
     }
 
+    @PostMapping("/all-category")
+    public ResponseEntity<SuccessStatusResponse<RecentNoticesResponse2>> getAllCategoryNotices(
+            HttpServletRequest request,
+            @RequestBody UnreadNoticeCountRequest categorieRequest) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        RecentNoticesResponse2 response = noticeService.getAllCategoryNotices(loginIdentifier, categorieRequest.categorie());
 
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.ALL_CATEGORY_NOTICES_FETCH_SUCCESS, response));
+    }
 
 
 }
