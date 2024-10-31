@@ -164,5 +164,17 @@ public class NoticeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.SAVED_NOTICES_BY_CATEGORY_SUCCESS, response));
     }
 
+    @PostMapping("/view-check/{noticeId}")
+    public ResponseEntity<SuccessStatusResponse<Void>> checkNoticeView(
+            HttpServletRequest request,
+            @PathVariable Long noticeId) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        noticeService.checkNoticeView(loginIdentifier, noticeId);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_VIEW_CHECK_SUCCESS));
+    }
+
 
 }

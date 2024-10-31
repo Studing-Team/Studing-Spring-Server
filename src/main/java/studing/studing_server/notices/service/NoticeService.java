@@ -667,7 +667,29 @@ public class NoticeService {
     }
 
 
+    @Transactional
+    public void checkNoticeView(String loginIdentifier, Long noticeId) {
+        // 현재 사용자 조회
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        // NoticeView 조회
+        NoticeView noticeView = noticeViewRepository.findByMemberIdAndNoticeId(currentMember.getId(), noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항의 조회 기록이 없습니다."));
+
+        // readAt이 false인 경우에만 처리
+        if (!noticeView.isReadAt()) {
+            // readAt을 true로 업데이트
+            noticeView.setReadAt(true);
+
+            // 공지사항의 조회수 증가
+            notice.setViewCount(notice.getViewCount() + 1);
+        }
+    }
 
 
 

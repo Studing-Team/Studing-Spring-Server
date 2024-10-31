@@ -8,4 +8,6 @@ import studing.studing_server.notices.entity.NoticeView;
 
 public interface NoticeViewRepository extends JpaRepository<NoticeView, Long> {
     Optional<NoticeView> findByNoticeAndMember(Notice notice, Member member);
+    boolean existsByMemberIdAndNoticeId(Long memberId, Long noticeId);
+    Optional<NoticeView> findByMemberIdAndNoticeId(Long memberId, Long noticeId);
 }
