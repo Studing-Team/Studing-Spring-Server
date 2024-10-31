@@ -388,6 +388,27 @@ public class NoticeService {
         noticeRepository.save(notice);
     }
 
+    // NoticeService에 추가
+    @Transactional
+    public void cancelSaveNotice(String loginIdentifier, Long noticeId) {
+        // 현재 사용자 조회
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        // 저장한 공지인지 확인
+        SaveNotice saveNotice = saveNoticeRepository.findByMemberIdAndNoticeId(currentMember.getId(), noticeId)
+                .orElseThrow(() -> new IllegalStateException("저장하지 않은 공지사항입니다."));
+
+        // SaveNotice 삭제
+        saveNoticeRepository.delete(saveNotice);
+
+        // 공지사항의 저장 수 감소
+        notice.setSaveCount(notice.getSaveCount() - 1);
+        noticeRepository.save(notice);
+    }
 
 }
