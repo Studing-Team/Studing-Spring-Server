@@ -37,6 +37,7 @@ public class NotificationService {
 
 
     private void sendNotification(List<FCMToken> tokens, String title, String body) {
+        System.out.println("aaaaa");
         MulticastMessage message = MulticastMessage.builder()
                 .setNotification(Notification.builder()
                         .setTitle(title)
@@ -44,11 +45,15 @@ public class NotificationService {
                         .build())
                 .addAllTokens(tokens.stream().map(FCMToken::getToken).toList())
                 .build();
-
+        System.out.println("bbbb");
         try {
             BatchResponse response = firebaseMessaging.sendMulticast(message);
+            System.out.println(response);
+            System.out.println("dsadfsdaffsf");
+
             handleFailedMessages(response, tokens);
         } catch (FirebaseMessagingException e) {
+            System.out.println("pppppp");
             // 로깅 및 예외 처리
         }
     }

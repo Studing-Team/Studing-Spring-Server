@@ -18,7 +18,7 @@ public class AdminController {
 
     private final MemberVerificationService memberVerificationService;
 
-    @PostMapping("/members/{memberId}/verify")
+    @PostMapping("/push/{memberId}")
     public ResponseEntity<SuccessStatusResponse<Void>> verifyMember(@PathVariable Long memberId) {
         memberVerificationService.verifyMember(memberId);
 
