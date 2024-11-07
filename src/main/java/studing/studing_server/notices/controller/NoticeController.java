@@ -151,7 +151,7 @@ public class NoticeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_VIEW_CHECK_SUCCESS));
     }
 
-    // NoticeController에 추가
+
     @PostMapping("/unread/all")
     public ResponseEntity<SuccessStatusResponse<UnreadNoticesResponse>> getAllUnreadNotices(
             HttpServletRequest request,

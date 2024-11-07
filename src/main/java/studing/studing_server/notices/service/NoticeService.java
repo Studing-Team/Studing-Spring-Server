@@ -377,6 +377,7 @@ public class NoticeService {
         noticeRepository.save(notice);
     }
     // NoticeService에 추가
+
     @Transactional(readOnly = true)
     public NoticeDetailResponse getNoticeDetail(String loginIdentifier, Long noticeId) {
         // 현재 사용자 조회
@@ -398,7 +399,8 @@ public class NoticeService {
                     .orElseThrow(() -> new IllegalArgumentException("대학교 정보를 찾을 수 없습니다."));
 
             affiliationName = university.getUniversityNickName();
-            logoImage = university.getUniversityLogoImage();
+            String originalLogo = university.getUniversityLogoImage();
+            logoImage = originalLogo != null ? S3_BUCKET_URL + originalLogo : "";
         } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())) {
             CollegeDepartment collegeDepartment = collegeDepartmentRepository
                     .findByCollegeDepartmentNameAndUniversity_UniversityName(
@@ -407,7 +409,8 @@ public class NoticeService {
                     )
                     .orElseThrow(() -> new IllegalArgumentException("단과대학 정보를 찾을 수 없습니다."));
             affiliationName = collegeDepartment.getCollegeDepartmentNickName();
-            logoImage = collegeDepartment.getCollegeDepartmentLogoImage();
+            String originalLogo = collegeDepartment.getCollegeDepartmentLogoImage();
+            logoImage = originalLogo != null ? S3_BUCKET_URL + originalLogo : "";
         } else {
             Department department = departmentRepository
                     .findByDepartmentNameAndUniversity_UniversityName(
@@ -416,7 +419,8 @@ public class NoticeService {
                     )
                     .orElseThrow(() -> new IllegalArgumentException("학과 정보를 찾을 수 없습니다."));
             affiliationName = department.getDepartmentNickName();
-            logoImage = department.getDepartmentImage();
+            String originalLogo = department.getDepartmentImage();
+            logoImage = originalLogo != null ? S3_BUCKET_URL + originalLogo : "";
         }
 
         // 저장 여부 확인
@@ -431,9 +435,11 @@ public class NoticeService {
                 noticeId
         );
 
-        // 이미지 URL 리스트 생성
+        // 이미지 URL 리스트 생성 (S3 버킷 URL 추가)
         List<String> images = notice.getNoticeImages().stream()
                 .map(NoticeImage::getNoticeImage)
+                .map(image -> image != null ? S3_BUCKET_URL + image : "")
+                .filter(url -> !url.isEmpty())
                 .collect(Collectors.toList());
 
         return new NoticeDetailResponse(
@@ -555,7 +561,7 @@ public class NoticeService {
     }
 
 
-    // NoticeService에 추가
+
     @Transactional(readOnly = true)
     public UnreadNoticesResponse getAllUnreadNotices(String loginIdentifier, String categorie) {
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
@@ -573,7 +579,6 @@ public class NoticeService {
             String affiliationName = "";
             String logoImage = "";
 
-            // 읽지 않은 공지인지 확인
             Optional<NoticeView> noticeView = noticeViewRepository.findByMemberIdAndNoticeId(
                     currentMember.getId(),
                     notice.getId()
@@ -582,7 +587,7 @@ public class NoticeService {
             boolean isUnread = noticeView.map(nv -> !nv.isReadAt()).orElse(true);
 
             if (!isUnread) {
-                continue; // 이미 읽은 공지는 건너뛰기
+                continue;
             }
 
             if ("전체".equals(categorie)) {
@@ -590,17 +595,20 @@ public class NoticeService {
                         && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
                     matches = true;
                     affiliationName = "총학생회";
-                    logoImage = getUniversityLogo(noticeWriter);
+                    String originalLogo = getUniversityLogo(noticeWriter);
+                    logoImage = originalLogo != null ? S3_BUCKET_URL + originalLogo : "";
                 } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
                         && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
                     matches = true;
                     affiliationName = noticeWriter.getMemberCollegeDepartment();
-                    logoImage = getCollegeLogo(noticeWriter);
+                    String originalLogo = getCollegeLogo(noticeWriter);
+                    logoImage = originalLogo != null ? S3_BUCKET_URL + originalLogo : "";
                 } else if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
                         && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
                     matches = true;
                     affiliationName = noticeWriter.getMemberDepartment();
-                    logoImage = getDepartmentLogo(noticeWriter);
+                    String originalLogo = getDepartmentLogo(noticeWriter);
+                    logoImage = originalLogo != null ? S3_BUCKET_URL + originalLogo : "";
                 }
             } else {
                 switch(categorie) {
@@ -609,7 +617,8 @@ public class NoticeService {
                                 && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
                             matches = true;
                             affiliationName = "총학생회";
-                            logoImage = getUniversityLogo(noticeWriter);
+                            String originalLogo = getUniversityLogo(noticeWriter);
+                            logoImage = originalLogo != null ? S3_BUCKET_URL + originalLogo : "";
                         }
                         break;
 
@@ -618,7 +627,8 @@ public class NoticeService {
                                 && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
                             matches = true;
                             affiliationName = noticeWriter.getMemberCollegeDepartment();
-                            logoImage = getCollegeLogo(noticeWriter);
+                            String originalLogo = getCollegeLogo(noticeWriter);
+                            logoImage = originalLogo != null ? S3_BUCKET_URL + originalLogo : "";
                         }
                         break;
 
@@ -627,15 +637,19 @@ public class NoticeService {
                                 && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
                             matches = true;
                             affiliationName = noticeWriter.getMemberDepartment();
-                            logoImage = getDepartmentLogo(noticeWriter);
+                            String originalLogo = getDepartmentLogo(noticeWriter);
+                            logoImage = originalLogo != null ? S3_BUCKET_URL + originalLogo : "";
                         }
                         break;
                 }
             }
 
             if (matches) {
+                // 공지사항 이미지들에 S3 URL 추가
                 List<String> images = notice.getNoticeImages().stream()
                         .map(NoticeImage::getNoticeImage)
+                        .map(image -> image != null ? S3_BUCKET_URL + image : "")
+                        .filter(url -> !url.isEmpty())
                         .collect(Collectors.toList());
 
                 unreadNotices.add(new UnreadNoticeResponse(
@@ -656,6 +670,11 @@ public class NoticeService {
 
         return new UnreadNoticesResponse(unreadNotices);
     }
+
+
+
+
+
 
     // 로고 이미지 조회 헬퍼 메서드들
     private String getUniversityLogo(Member writer) {
