@@ -157,36 +157,50 @@ public class HomeService {
             if (!hasUnread) {
                 Member noticeWriter = notice.getMember();
 
-                switch(categorie) {
-                    case "총학생회":
-                        if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
-                                && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
-                            count++;
-                        }
-                        break;
+                if ("전체".equals(categorie)) {
+                    // 전체 카테고리일 경우 모든 조건 확인
+                    if (("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
+                            && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity()))
+                            || ("ROLE_COLLEGE".equals(noticeWriter.getRole())
+                            && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment()))
+                            || ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
+                            && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment()))) {
+                        count++;
+                    }
+                } else {
+                    // 기존 카테고리별 로직
+                    switch(categorie) {
+                        case "총학생회":
+                            if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
+                                    && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
+                                count++;
+                            }
+                            break;
 
-                    case "단과대":
-                        if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
-                                && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
-                            count++;
-                        }
-                        break;
+                        case "단과대":
+                            if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
+                                    && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
+                                count++;
+                            }
+                            break;
 
-                    case "학과":
-                        if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
-                                && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
-                            count++;
-                        }
-                        break;
+                        case "학과":
+                            if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
+                                    && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
+                                count++;
+                            }
+                            break;
 
-                    default:
-                        throw new IllegalArgumentException("잘못된 카테고리입니다. '총학생회', '단과대', '학과' 중 하나를 입력해주세요.");
+                        default:
+                            throw new IllegalArgumentException("잘못된 카테고리입니다. '전체', '총학생회', '단과대', '학과' 중 하나를 입력해주세요.");
+                    }
                 }
             }
         }
 
         return new UnreadNoticeCountResponse(count);
     }
+
 
 
 
