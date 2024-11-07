@@ -29,7 +29,7 @@ import studing.studing_server.universityData.repository.UniversityDataRepository
 @Service
 @RequiredArgsConstructor
 public class HomeService {
-
+    private static final String S3_BUCKET_URL = "https://studing-static-files.s3.ap-northeast-2.amazonaws.com/";
     private final MemberRepository memberRepository;
     private final UniversityDataRepository universityDataRepository;
     private final CollegeDepartmentRepository collegeDepartmentRepository;
@@ -40,30 +40,34 @@ public class HomeService {
 
 
     public LogoResponse getLogoWithName(String loginIdentifier) {
-        // Member 테이블에서 사용자의 memberUniversity, memberCollegeDepartment, memberDepartment 정보 조회
         Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
-        // University에서 universityName에 해당하는 정보 조회
         University university = universityDataRepository.findByUniversityName(member.getMemberUniversity())
                 .orElseThrow(() -> new IllegalArgumentException("해당 대학을 찾을 수 없습니다."));
 
-        // CollegeDepartment에서 collegeDepartmentName에 해당하는 정보 조회
         CollegeDepartment collegeDepartment = collegeDepartmentRepository
                 .findByCollegeDepartmentNameAndUniversity_UniversityName(member.getMemberCollegeDepartment(), university.getUniversityName())
                 .orElseThrow(() -> new IllegalArgumentException("해당 단과대를 찾을 수 없습니다."));
 
-        // Department에서 memberDepartment에 해당하는 정보 조회
         Department department = departmentRepository.findByDepartmentNameAndUniversity_UniversityName(member.getMemberDepartment(), university.getUniversityName())
                 .orElseThrow(() -> new IllegalArgumentException("해당 학과를 찾을 수 없습니다."));
 
+        String universityLogoUrl = university.getUniversityLogoImage() != null ?
+                S3_BUCKET_URL + university.getUniversityLogoImage() : null;
+
+        String collegeDepartmentLogoUrl = collegeDepartment.getCollegeDepartmentLogoImage() != null ?
+                S3_BUCKET_URL + collegeDepartment.getCollegeDepartmentLogoImage() : null;
+
+        String departmentLogoUrl = department.getDepartmentImage() != null ?
+                S3_BUCKET_URL + department.getDepartmentImage() : null;
 
         return new LogoResponse(
-                university.getUniversityLogoImage(),
+                universityLogoUrl,
                 "총학생회",
-                collegeDepartment.getCollegeDepartmentLogoImage(),
+                collegeDepartmentLogoUrl,
                 collegeDepartment.getCollegeDepartmentName(),
-                department.getDepartmentImage(),
+                departmentLogoUrl,
                 department.getDepartmentName()
         );
     }

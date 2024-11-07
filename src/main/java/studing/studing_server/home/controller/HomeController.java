@@ -55,8 +55,6 @@ public class HomeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.DATA_FETCH_SUCCESS, memberDataResponse));
     }
 
-
-
     @GetMapping("/unread-categories")
     public ResponseEntity<SuccessStatusResponse<UnreadCategoryResponse>> getUnreadCategories(
             HttpServletRequest request) {
