@@ -21,6 +21,10 @@ jobs:
       - name: application.yml 파일 만들기
         run: echo "${{ secrets.APPLICATION_PROPERTIES }}" > ./src/main/resources/application.yml
 
+      - name: Create Firebase Admin SDK json file
+        run: echo "${{ secrets.FIREBASE_ADMIN_SDK }}" > ./src/main/resources/studing-fcm-firebase-adminsdk-ltwke-d4d183baf8.json
+
+
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
 
