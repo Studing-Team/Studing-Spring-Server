@@ -208,42 +208,41 @@ public class NoticeService {
             boolean matches = false;
             String writerInfo = "";
 
+            switch(categorie) {
+                case "총학생회":
+                    if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
+                            && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
+                        matches = true;
+                        writerInfo = "총학생회";
+                    }
+                    break;
 
-                switch(categorie) {
-                    case "총학생회":
-                        if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
-                                && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
-                            matches = true;
-                            writerInfo = "총학생회";
-                        }
-                        break;
+                case "단과대":
+                    if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
+                            && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
+                        matches = true;
+                        writerInfo = noticeWriter.getMemberCollegeDepartment();
+                    }
+                    break;
 
-                    case "단과대":
-                        if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
-                                && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
-                            matches = true;
-                            writerInfo = noticeWriter.getMemberCollegeDepartment();
-                        }
-                        break;
+                case "학과":
+                    if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
+                            && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
+                        matches = true;
+                        writerInfo = noticeWriter.getMemberDepartment();
+                    }
+                    break;
 
-                    case "학과":
-                        if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
-                                && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
-                            matches = true;
-                            writerInfo = noticeWriter.getMemberDepartment();
-                        }
-                        break;
-
-                    default:
-                        throw new IllegalArgumentException("잘못된 카테고리입니다. '전체', '총학생회', '단과대', '학과' 중 하나를 입력해주세요.");
-                }
-
+                default:
+                    throw new IllegalArgumentException("잘못된 카테고리입니다. '전체', '총학생회', '단과대', '학과' 중 하나를 입력해주세요.");
+            }
 
             if (matches) {
                 // 이미지 처리
                 String image = "";
                 if (notice.getNoticeImages() != null && !notice.getNoticeImages().isEmpty()) {
-                    image = notice.getNoticeImages().get(0).getNoticeImage();
+                    String originalImage = notice.getNoticeImages().get(0).getNoticeImage();
+                    image = originalImage != null ? S3_BUCKET_URL + originalImage : "";
                 }
 
                 // 저장과 좋아요 상태 확인
@@ -455,11 +454,6 @@ public class NoticeService {
     }
 
 
-
-
-
-
-
     @Transactional(readOnly = true)
     public SavedNoticesResponse2 getSavedNoticesByCategory(String loginIdentifier, String categorie) {
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
@@ -514,12 +508,18 @@ public class NoticeService {
             }
 
             if (matches) {
+                // 이미지 처리
+                String image = "";
+                if (notice.getNoticeImages() != null && !notice.getNoticeImages().isEmpty()) {
+                    String originalImage = notice.getNoticeImages().get(0).getNoticeImage();
+                    image = originalImage != null ? S3_BUCKET_URL + originalImage : "";
+                }
+
                 noticeResponses.add(new SavedNoticeResponse2(
                         notice.getId(),
-
                         notice.getTitle(),
-
                         notice.getCreatedAt(),
+                        image,  // 이미지 URL 추가
                         true  // 저장된 공지사항이므로 항상 true
                 ));
             }
@@ -527,6 +527,7 @@ public class NoticeService {
 
         return new SavedNoticesResponse2(noticeResponses);
     }
+
 
 
     @Transactional

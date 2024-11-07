@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 public record SavedNoticeResponse2(
         Long id,
         String title,
+
         LocalDateTime createdAt,
+        String image,
         boolean saveCheck
 ) {}
