@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum SuccessMessage {
 
     UNIVERSITY_GET_SUCCESS(HttpStatus.OK.value(),"대학교이름 조회에 성공하였습니다."),
+    MEMBER_VERIFICATION_SUCCESS(HttpStatus.OK.value(),"인증성공했습니다..."),
     NOTIFICATION_TOKEN_REGISTERED(HttpStatus.OK.value(),"FCM 토큰 저장에 성공했습니다.."),
     DEPARTMENT_GET_SUCCESS(HttpStatus.OK.value(),"대학교이름을 통해 학과 조회에 성공하였습니다."),
     EMAIL_AVAILABLE(HttpStatus.OK.value(),"사용가능한 아이디입니다."),
