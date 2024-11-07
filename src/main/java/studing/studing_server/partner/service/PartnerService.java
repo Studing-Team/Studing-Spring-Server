@@ -19,6 +19,7 @@ import studing.studing_server.universityData.repository.UniversityDataRepository
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class PartnerService {
+    private static final String S3_PARTNER_LOGO_URL = "https://studing-static-files.s3.ap-northeast-2.amazonaws.com/partner/";
     private final MemberRepository memberRepository;
     private final UniversityDataRepository universityRepository;
     private final PartnerRepository partnerRepository;
@@ -49,7 +50,7 @@ public class PartnerService {
                         partner.getPartnerContent(),
                         partner.getLatitude(),
                         partner.getLongitude(),
-                        "https://uni-voice-bucket.s3.ap-northeast-2.amazonaws.com/partner-logos/" + partner.getId() + ".jpg" // 예시 로고 URL
+                        S3_PARTNER_LOGO_URL + partner.getPartnerImage()
                 ))
                 .collect(Collectors.toList());
 

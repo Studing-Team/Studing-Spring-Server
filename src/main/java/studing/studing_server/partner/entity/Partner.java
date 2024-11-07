@@ -31,6 +31,7 @@ public class Partner {
     private  String partnerContent;
     private  String partnerDescription;
     private  String partnerAddress;
+    private String partnerImage;
 
     @Column(precision = 10, scale = 8)  // DECIMAL(10,8)
     private BigDecimal latitude;        // 위도
