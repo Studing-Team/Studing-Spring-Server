@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,9 +17,12 @@ import studing.studing_server.home.dto.UnreadNoticeCountResponse;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.notices.dto.NoticeResponse;
-import studing.studing_server.notices.dto.RecentNoticesResponse;
+import studing.studing_server.home.dto.notice.RecentNoticesResponse;
+import studing.studing_server.notices.dto.SavedNoticeResponse;
+import studing.studing_server.home.dto.notice.SavedNoticesResponse;
 import studing.studing_server.notices.entity.Notice;
 import studing.studing_server.notices.entity.NoticeView;
+import studing.studing_server.notices.entity.SaveNotice;
 import studing.studing_server.notices.repository.NoticeLikeRepository;
 import studing.studing_server.notices.repository.NoticeRepository;
 import studing.studing_server.notices.repository.NoticeViewRepository;
@@ -299,7 +303,45 @@ public class HomeService {
     }
 
 
+    @Transactional(readOnly = true)
+    public SavedNoticesResponse getSavedNotices(String loginIdentifier) {
+        // 현재 사용자 조회
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
+        // 저장한 공지사항 조회 (최근 5개)
+        List<SaveNotice> savedNotices = saveNoticeRepository
+                .findTop5ByMemberIdOrderByNoticeCreatedAtDesc(currentMember.getId());
+
+
+        List<SavedNoticeResponse> noticeResponses = savedNotices.stream()
+                .map(savedNotice -> {
+                    Notice notice = savedNotice.getNotice();
+                    Member noticeWriter = notice.getMember();
+                    String affiliation;
+
+                    // 작성자의 권한에 따른 소속 정보 설정
+                    if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())) {
+                        affiliation = "총학생회";
+                    } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())) {
+                        affiliation = noticeWriter.getMemberCollegeDepartment();
+                    } else {
+                        affiliation = noticeWriter.getMemberDepartment();
+                    }
+
+                    return new SavedNoticeResponse(
+                            notice.getId(),
+                            affiliation,
+                            notice.getTitle(),
+                            notice.getContent(),
+                            notice.getCreatedAt(),
+                            true  // 저장된 공지사항 목록이므로 항상 true
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return new SavedNoticesResponse(noticeResponses);
+    }
 
 
 

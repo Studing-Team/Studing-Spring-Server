@@ -21,7 +21,8 @@ import studing.studing_server.home.dto.UnreadCategoryResponse;
 import studing.studing_server.home.dto.UnreadNoticeCountRequest;
 import studing.studing_server.home.dto.UnreadNoticeCountResponse;
 import studing.studing_server.home.service.HomeService;
-import studing.studing_server.notices.dto.RecentNoticesResponse;
+import studing.studing_server.home.dto.notice.RecentNoticesResponse;
+import studing.studing_server.home.dto.notice.SavedNoticesResponse;
 
 
 @RestController
@@ -98,7 +99,16 @@ public class HomeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.RECENT_NOTICES_FETCH_SUCCESS, response));
     }
 
+    @GetMapping("/save")
+    public ResponseEntity<SuccessStatusResponse<SavedNoticesResponse>> getSavedNotices(
+            HttpServletRequest request) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        SavedNoticesResponse response = homeService.getSavedNotices(loginIdentifier);
 
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.SAVED_NOTICES_FETCH_SUCCESS, response));
+    }
 
 
 

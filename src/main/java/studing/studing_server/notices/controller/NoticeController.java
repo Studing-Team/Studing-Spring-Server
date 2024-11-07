@@ -18,9 +18,8 @@ import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.home.dto.UnreadNoticeCountRequest;
 import studing.studing_server.member.dto.NoticeCreateRequest;
 import studing.studing_server.notices.dto.NoticeDetailResponse;
-import studing.studing_server.notices.dto.RecentNoticesResponse;
+import studing.studing_server.home.dto.notice.RecentNoticesResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse2;
-import studing.studing_server.notices.dto.SavedNoticesResponse;
 import studing.studing_server.notices.dto.SavedNoticesResponse2;
 import studing.studing_server.notices.dto.UnreadNoticesResponse;
 import studing.studing_server.notices.service.NoticeService;
@@ -39,9 +38,6 @@ public class NoticeController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(SuccessStatusResponse.of(SuccessMessage.CREATE_NOTICE_SUCCESS, null));
     }
-
-
-
 
     @GetMapping("/all")
     public ResponseEntity<SuccessStatusResponse<RecentNoticesResponse>> getAllNotices(
@@ -129,16 +125,7 @@ public class NoticeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_DETAIL_FETCH_SUCCESS, response));
     }
 
-    @GetMapping("/save")
-    public ResponseEntity<SuccessStatusResponse<SavedNoticesResponse>> getSavedNotices(
-            HttpServletRequest request) {
-        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
-        SavedNoticesResponse response = noticeService.getSavedNotices(loginIdentifier);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(SuccessStatusResponse.of(SuccessMessage.SAVED_NOTICES_FETCH_SUCCESS, response));
-    }
 
     @PostMapping("/save-category")
     public ResponseEntity<SuccessStatusResponse<SavedNoticesResponse2>> getSavedNoticesByCategory(

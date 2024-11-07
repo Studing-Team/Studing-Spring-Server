@@ -7,25 +7,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import studing.studing_server.external.S3Service;
-import studing.studing_server.member.dto.CustomMemberDetails;
 import studing.studing_server.member.dto.NoticeCreateRequest;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.notices.dto.NoticeDetailResponse;
 import studing.studing_server.notices.dto.NoticeResponse;
 import studing.studing_server.notices.dto.NoticeResponse2;
-import studing.studing_server.notices.dto.RecentNoticesResponse;
+import studing.studing_server.home.dto.notice.RecentNoticesResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse2;
-import studing.studing_server.notices.dto.SavedNoticeResponse;
 import studing.studing_server.notices.dto.SavedNoticeResponse2;
-import studing.studing_server.notices.dto.SavedNoticesResponse;
 import studing.studing_server.notices.dto.SavedNoticesResponse2;
 import studing.studing_server.notices.dto.UnreadNoticeResponse;
 import studing.studing_server.notices.dto.UnreadNoticesResponse;
@@ -50,6 +45,8 @@ import studing.studing_server.universityData.repository.UniversityDataRepository
 @Service
 @RequiredArgsConstructor
 public class NoticeService {
+    private static final String S3_BUCKET_URL = "https://studing-static-files.s3.ap-northeast-2.amazonaws.com/";
+
     private final MemberRepository memberRepository;
     private final NoticeRepository noticeRepository;
     private  final NoticeViewRepository noticeViewRepository;
@@ -127,8 +124,6 @@ public class NoticeService {
 
 
 
-
-
     @Transactional(readOnly = true)
     public RecentNoticesResponse getAllNotices(String loginIdentifier) {
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
@@ -163,7 +158,8 @@ public class NoticeService {
                 // 이미지 처리
                 String image = "";
                 if (notice.getNoticeImages() != null && !notice.getNoticeImages().isEmpty()) {
-                    image = notice.getNoticeImages().get(0).getNoticeImage();
+                    String originalImage = notice.getNoticeImages().get(0).getNoticeImage();
+                    image = originalImage != null ? S3_BUCKET_URL + originalImage : "";
                 }
 
                 // 저장과 좋아요 상태 확인
@@ -460,46 +456,8 @@ public class NoticeService {
 
 
 
-    // NoticeService에 추가
-    @Transactional(readOnly = true)
-    public SavedNoticesResponse getSavedNotices(String loginIdentifier) {
-        // 현재 사용자 조회
-        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
-
-        // 저장한 공지사항 조회 (최근 5개)
-        List<SaveNotice> savedNotices = saveNoticeRepository
-                .findTop5ByMemberIdOrderByNoticeCreatedAtDesc(currentMember.getId());
 
 
-        List<SavedNoticeResponse> noticeResponses = savedNotices.stream()
-                .map(savedNotice -> {
-                    Notice notice = savedNotice.getNotice();
-                    Member noticeWriter = notice.getMember();
-                    String affiliation;
-
-                    // 작성자의 권한에 따른 소속 정보 설정
-                    if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())) {
-                        affiliation = "총학생회";
-                    } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())) {
-                        affiliation = noticeWriter.getMemberCollegeDepartment();
-                    } else {
-                        affiliation = noticeWriter.getMemberDepartment();
-                    }
-
-                    return new SavedNoticeResponse(
-                            notice.getId(),
-                            affiliation,
-                            notice.getTitle(),
-                            notice.getContent(),
-                            notice.getCreatedAt(),
-                            true  // 저장된 공지사항 목록이므로 항상 true
-                    );
-                })
-                .collect(Collectors.toList());
-
-        return new SavedNoticesResponse(noticeResponses);
-    }
 
 
     @Transactional(readOnly = true)
