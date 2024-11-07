@@ -16,8 +16,10 @@ public class FCMConfig {
 
     @Bean
     FirebaseMessaging firebaseMessaging() throws IOException {
+        // 파일 경로 수정
         GoogleCredentials googleCredentials = GoogleCredentials
-                .fromStream(new ClassPathResource("firebase-service-account.json").getInputStream());
+                .fromStream(new ClassPathResource("studing-fcm-firebase-adminsdk-ltwke-d4d183baf8.json").getInputStream());
+
         FirebaseOptions firebaseOptions = FirebaseOptions.builder()
                 .setCredentials(googleCredentials)
                 .build();

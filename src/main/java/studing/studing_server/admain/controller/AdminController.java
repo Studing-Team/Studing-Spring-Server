@@ -19,7 +19,6 @@ public class AdminController {
     private final MemberVerificationService memberVerificationService;
 
     @PostMapping("/members/{memberId}/verify")
-    @PreAuthorize("hasRole('ROLE_UNIVERSITY') or hasRole('ROLE_COLLEGE') or hasRole('ROLE_DEPARTMENT')")
     public ResponseEntity<SuccessStatusResponse<Void>> verifyMember(@PathVariable Long memberId) {
         memberVerificationService.verifyMember(memberId);
 

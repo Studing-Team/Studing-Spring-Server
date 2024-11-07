@@ -31,13 +31,10 @@ public class NotificationService {
 
     public void sendNotificationToMember(Long memberId, String title, String body) {
         List<FCMToken> tokens = fcmTokenRepository.findAllValidTokensByMemberId(memberId);
+        System.out.println("ddddddd");
         sendNotification(tokens, title, body);
     }
 
-    public void sendNotificationToUniversity(String universityName, String title, String body) {
-        List<FCMToken> tokens = fcmTokenRepository.findAllValidTokensByUniversity(universityName);
-        sendNotification(tokens, title, body);
-    }
 
     private void sendNotification(List<FCMToken> tokens, String title, String body) {
         MulticastMessage message = MulticastMessage.builder()
