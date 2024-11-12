@@ -47,6 +47,7 @@ public class Member extends BaseTimeEntity {
     private String memberDepartment;
 
     private String  role;
+    private Boolean marketingAgreement; // 마케팅 정보 수신 동의 여부
 
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -65,8 +66,10 @@ public class Member extends BaseTimeEntity {
 
 
     @Builder
-    public Member(Long admissionNumber, String name, String studentNumber, String loginIdentifier, String password, String studentCardImage,
-                  String memberUniversity, String memberCollegeDepartment, String memberDepartment, String role) {
+    public Member(Long admissionNumber, String name, String studentNumber,
+                  String loginIdentifier, String password, String studentCardImage,
+                  String memberUniversity, String memberCollegeDepartment,
+                  String memberDepartment, String role, Boolean marketingAgreement) {
         this.admissionNumber = admissionNumber;
         this.name = name;
         this.studentNumber = studentNumber;
@@ -77,6 +80,7 @@ public class Member extends BaseTimeEntity {
         this.memberCollegeDepartment = memberCollegeDepartment;
         this.memberDepartment = memberDepartment;
         this.role = role;
+        this.marketingAgreement = marketingAgreement;
     }
 
 }

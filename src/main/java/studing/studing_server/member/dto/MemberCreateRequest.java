@@ -10,5 +10,6 @@ public record MemberCreateRequest(
         String password,
         MultipartFile studentCardImage,
         String memberUniversity,
-        String memberDepartment
+        String memberDepartment,
+        Boolean marketingAgreement  // 마케팅 정보 수신 동의 필드 추가
 ) {}

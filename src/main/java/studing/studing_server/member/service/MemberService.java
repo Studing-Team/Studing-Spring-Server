@@ -58,7 +58,7 @@ public class MemberService {
     }
 
     private Member createMember(MemberCreateRequest request, String imageUrl, String memberCollegeDepartment) {
-       String hashedPassword = bCryptPasswordEncoder.encode(request.password());
+        String hashedPassword = bCryptPasswordEncoder.encode(request.password());
 
         return Member.builder()
                 .admissionNumber(request.admissionNumber())
@@ -71,6 +71,7 @@ public class MemberService {
                 .memberDepartment(request.memberDepartment())
                 .memberCollegeDepartment(memberCollegeDepartment)
                 .role("ROLE_UNUSER")
+                .marketingAgreement(request.marketingAgreement()) // 마케팅 동의 여부 추가
                 .build();
     }
 
