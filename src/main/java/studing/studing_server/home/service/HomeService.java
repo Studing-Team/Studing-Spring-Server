@@ -275,7 +275,9 @@ public class HomeService {
                         break;
 
                     default:
-                        throw new IllegalArgumentException("잘못된 카테고리입니다. '전체', '총학생회', '단과대', '학과' 중 하나를 입력해주세요.");
+                        throw new BusinessException(
+                                ErrorMessage.INVALID_CATEGORY
+                        );
                 }
             }
 
