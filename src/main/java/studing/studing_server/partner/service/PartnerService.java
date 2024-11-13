@@ -1,10 +1,13 @@
 package studing.studing_server.partner.service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import studing.studing_server.common.exception.message.BusinessException;
+import studing.studing_server.common.exception.message.ErrorMessage;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.partner.dto.PartnerResponse;
@@ -25,6 +28,10 @@ public class PartnerService {
     private final PartnerRepository partnerRepository;
 
     public PartnersResponse getPartnersByCategory(String loginIdentifier, String category) {
+        if (!Arrays.asList("전체", "음식점", "카페", "운동", "문화", "주점").contains(category)) {
+            throw new BusinessException(ErrorMessage.INVALID_PARTNER_CATEGORY);
+        }
+
         // 1. 현재 사용자의 대학교 정보 조회
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
