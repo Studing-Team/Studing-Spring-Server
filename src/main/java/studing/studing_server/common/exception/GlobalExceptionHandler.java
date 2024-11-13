@@ -22,10 +22,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of(e.getErrorMessage().getStatus(), e.getErrorMessage().getMessage(), null));
     }
 
-//    @ExceptionHandler(UnauthorizedException.class)
-//    protected ResponseEntity<ErrorResponse> handlerUnauthorizedException(UnauthorizedException e) {
-//        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                .body(ErrorResponse.of(e.getErrorMessage().getStatus(), e.getErrorMessage().getMessage(), null));
-//    }
-
 }

@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import studing.studing_server.common.exception.message.BusinessException;
+import studing.studing_server.common.exception.message.ErrorMessage;
 import studing.studing_server.home.dto.LogoResponse;
 import studing.studing_server.home.dto.MemberDataResponse;
 import studing.studing_server.home.dto.UnreadCategoryResponse;
@@ -170,6 +172,18 @@ public class HomeService {
                 Member noticeWriter = notice.getMember();
 
                 switch(categorie) {
+                    case "전체":
+                        // 전체 카테고리의 경우 모든 공지사항을 카운트
+                        if (("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
+                                && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity()))
+                                || ("ROLE_COLLEGE".equals(noticeWriter.getRole())
+                                && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment()))
+                                || ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
+                                && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment()))) {
+                            count++;
+                        }
+                        break;
+
                     case "총학생회":
                         if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
                                 && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
@@ -192,14 +206,15 @@ public class HomeService {
                         break;
 
                     default:
-                        throw new IllegalArgumentException("잘못된 카테고리입니다. '총학생회', '단과대', '학과' 중 하나를 입력해주세요.");
+                        throw new BusinessException(
+                                ErrorMessage.INVALID_CATEGORY
+                        );
                 }
             }
         }
 
         return new UnreadNoticeCountResponse(count);
     }
-
 
 
     @Transactional(readOnly = true)
