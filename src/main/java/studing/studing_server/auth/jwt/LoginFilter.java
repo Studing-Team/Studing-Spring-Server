@@ -1,9 +1,12 @@
 package studing.studing_server.auth.jwt;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Getter;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,6 +23,7 @@ import studing.studing_server.member.dto.CustomMemberDetails;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -84,8 +88,12 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String token = jwtUtil.createJwt(username, role, 60*60*60*60*60*10L);
 
+
+        // successfulAuthentication 메서드 내에서
+        Member member = memberRepository.findByLoginIdentifier(username)
+                .orElseThrow(() -> new RuntimeException("Member not found"));
         // JWT 토큰을 응답 헤더에 추가하는 대신, 응답 바디의 data에 포함
-        LoginResponseData loginData = new LoginResponseData(token);
+        LoginResponseData loginData = new LoginResponseData(token,  new LoginResponseData.MemberData(member));
 
         // SuccessStatusResponse를 통해 응답 바디 작성
         SuccessStatusResponse<LoginResponseData> successResponse = SuccessStatusResponse.of(SuccessMessage.SIGNIN_SUCCESS, loginData);
@@ -145,19 +153,49 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
 
-
-
     public static class LoginResponseData {
         private final String accessToken;
+        private final MemberData memberData;
 
-        public LoginResponseData(String accessToken) {
+        public LoginResponseData(String accessToken, MemberData memberData) {
             this.accessToken = accessToken;
+            this.memberData = memberData;
         }
 
         public String getAccessToken() {
             return accessToken;
         }
-    }
 
+        public MemberData getMemberData() {
+            return memberData;
+        }
+
+        // MemberData 내부 클래스
+        public static class MemberData {
+            private final Long id;
+            private final String loginIdentifier;
+            private final String name;
+            private final String memberUniversity;
+            private final String memberDepartment;
+            private final String role;
+
+            public MemberData(Member member) {
+                this.id = member.getId();
+                this.loginIdentifier = member.getLoginIdentifier();
+                this.name = member.getName();
+                this.memberUniversity = member.getMemberUniversity();
+                this.memberDepartment = member.getMemberDepartment();
+                this.role = member.getRole();
+            }
+
+            // getters
+            public Long getId() { return id; }
+            public String getLoginIdentifier() { return loginIdentifier; }
+            public String getName() { return name; }
+            public String getMemberUniversity() { return memberUniversity; }
+            public String getMemberDepartment() { return memberDepartment; }
+            public String getRole() { return role; }
+        }
+    }
 
     }
