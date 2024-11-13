@@ -2,6 +2,7 @@ package studing.studing_server.notices.service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -11,6 +12,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import studing.studing_server.common.exception.message.BusinessException;
+import studing.studing_server.common.exception.message.ErrorMessage;
 import studing.studing_server.external.S3Service;
 import studing.studing_server.member.dto.NoticeCreateRequest;
 import studing.studing_server.member.entity.Member;
@@ -234,7 +237,9 @@ public class NoticeService {
                     break;
 
                 default:
-                    throw new IllegalArgumentException("잘못된 카테고리입니다. '전체', '총학생회', '단과대', '학과' 중 하나를 입력해주세요.");
+                    throw new BusinessException(
+                            ErrorMessage.INVALID_CATEGORY
+                    );
             }
 
             if (matches) {
@@ -509,7 +514,9 @@ public class NoticeService {
                         break;
 
                     default:
-                        throw new IllegalArgumentException("잘못된 카테고리입니다. '전체', '총학생회', '단과대', '학과' 중 하나를 입력해주세요.");
+                        throw new BusinessException(
+                                ErrorMessage.INVALID_CATEGORY
+                        );
                 }
             }
 
@@ -564,6 +571,10 @@ public class NoticeService {
 
     @Transactional(readOnly = true)
     public UnreadNoticesResponse getAllUnreadNotices(String loginIdentifier, String categorie) {
+        if (!Arrays.asList("전체", "총학생회", "단과대", "학과").contains(categorie)) {
+            throw new BusinessException(ErrorMessage.INVALID_CATEGORY);
+        }
+
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
