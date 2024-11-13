@@ -13,16 +13,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import studing.studing_server.auth.jwt.JWTFilter;
 import studing.studing_server.auth.jwt.JWTUtil;
 import studing.studing_server.auth.jwt.LoginFilter;
+import studing.studing_server.member.repository.MemberRepository;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
+    private final MemberRepository memberRepository;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration,
+                          JWTUtil jwtUtil,
+                          MemberRepository memberRepository) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
+        this.memberRepository = memberRepository;
     }
 
     @Bean
@@ -53,7 +58,7 @@ public class SecurityConfig {
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil,memberRepository), UsernamePasswordAuthenticationFilter.class);
         http
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -64,7 +69,7 @@ public class SecurityConfig {
     private String[] getPermitAllEndpoints() {
         return new String[]{
                 "/test/**",
-                "/api/v1/member/login",
+                "/api/v1/member/signin",
                 "/api/v1/universityData/university",
                 "/api/v1/universityData/department",
                 "/api/v1/member/signup",

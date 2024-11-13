@@ -20,17 +20,19 @@ import studing.studing_server.member.dto.CustomMemberDetails;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
+import studing.studing_server.member.repository.MemberRepository;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final MemberRepository memberRepository;  // 추가
 
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
-
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, MemberRepository memberRepository) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.memberRepository = memberRepository;
         setFilterProcessesUrl("/api/v1/member/signin");
     }
 
@@ -40,11 +42,24 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String loginIdentifier = obtainLoginIdentifier(request);
         String password = obtainPassword(request);
 
-        //스프링 시큐리티에서 username과 password를 검증하기 위해서는 token에 담아야 함
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(loginIdentifier, password, null);
 
-        //token에 담은 검증을 위한 AuthenticationManager로 전달
-        return authenticationManager.authenticate(authToken);
+        // 1. 먼저 아이디 존재 여부 확인
+        if (!memberRepository.existsByLoginIdentifier(loginIdentifier)) {
+            unsuccessfulAuthentication(request, response, new AuthenticationException("ID_NOT_FOUND") {});
+            return null;
+        }
+
+
+        try {
+            //스프링 시큐리티에서 username과 password를 검증하기 위해서는 token에 담아야 함
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(loginIdentifier, password, null);
+            return authenticationManager.authenticate(authToken);  //token에 담은 검증을 위한 AuthenticationManager로 전달
+        } catch (AuthenticationException e) {
+            // 2. 비밀번호 불일치시
+            unsuccessfulAuthentication(request, response, new AuthenticationException("PASSWORD_INVALID") {
+            });
+            return null;
+        }
     }
 
     // loginId로 username을 대체하는 메서드
@@ -93,12 +108,19 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
         // 응답 상태 코드 설정 (401 Unauthorized)
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        ErrorMessage errorMessage;
 
-        // JWT_UNAUTHORIZED_EXCEPTION 메시지 사용
-        ErrorMessage errorMessage = ErrorMessage.JWT_UNAUTHORIZED_EXCEPTION;
+        if (failed.getMessage().equals("ID_NOT_FOUND")) {
+            errorMessage = ErrorMessage.LOGIN_ID_NOT_FOUND;
+        } else if (failed.getMessage().equals("PASSWORD_INVALID")) {
+            errorMessage = ErrorMessage.LOGIN_PASSWORD_INVALID;
+        } else {
+            errorMessage = ErrorMessage.JWT_UNAUTHORIZED_EXCEPTION;
+        }
 
         // 실패 응답 객체 생성
         ErrorResponse errorResponse = ErrorResponse.of(errorMessage.getStatus(), errorMessage.getMessage(), null);
+
 
         // 응답 바디에 JSON 형태로 작성
         response.setContentType("application/json");
