@@ -70,6 +70,7 @@ public class SecurityConfig {
         return new String[]{
                 "/test/**",
                 "/api/v1/admin/**",
+                "api/v1/notifications/**",
                 "/api/v1/member/signin",
                 "/api/v1/universityData/university",
                 "/api/v1/universityData/department",
