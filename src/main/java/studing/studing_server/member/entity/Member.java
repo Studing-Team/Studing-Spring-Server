@@ -2,6 +2,7 @@ package studing.studing_server.member.entity;
 
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -47,7 +48,9 @@ public class Member extends BaseTimeEntity {
     private String memberDepartment;
 
     private String  role;
-    private Boolean marketingAgreement; // 마케팅 정보 수신 동의 여부
+
+    @Column(nullable = false) // null 불가능하도록 설정
+    private Boolean marketingAgreement = false; // 기본값 설정
 
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
