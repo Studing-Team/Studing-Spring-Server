@@ -26,14 +26,6 @@ public class AdminController {
 
     private final MemberVerificationService memberVerificationService;
 
-    @PostMapping("/push/{memberId}")
-    public ResponseEntity<SuccessStatusResponse<Void>> verifyMember(@PathVariable Long memberId) {
-        memberVerificationService.verifyMember(memberId);
-
-        return ResponseEntity.ok()
-                .body(SuccessStatusResponse.of(SuccessMessage.MEMBER_VERIFICATION_SUCCESS));
-    }
-
     @PostMapping()
     public ResponseEntity<Map<String, String>> handleSlackInteraction(@RequestParam("payload") String payloadStr) {
         try {
@@ -43,34 +35,36 @@ public class AdminController {
             String actionId = payload.path("actions").get(0).path("action_id").asText();
             String memberId = payload.path("actions").get(0).path("value").asText();
 
-            // 결과를 Map으로 반환
+            // 버튼 액션에 따른 회원 검증
+            if ("approve_member".equals(actionId)) {
+                memberVerificationService.verifyMember(Long.parseLong(memberId), "ROLE_USER");
+            } else if ("reject_member".equals(actionId)) {
+                memberVerificationService.verifyMember(Long.parseLong(memberId), "ROLE_DENY");
+            }
+
             Map<String, String> response = new HashMap<>();
             response.put("actionId", actionId);
             response.put("memberId", memberId);
-            // 성공 로그
             log.info("Slack Interaction Success - ActionId: {}, MemberId: {}", actionId, memberId);
 
             return ResponseEntity.ok(response);
 
         } catch (JsonProcessingException e) {
-            // JSON 파싱 에러 로그
             log.error("Failed to parse Slack payload: {}", e.getMessage());
             log.error("Payload content: {}", payloadStr);
             log.error("Stack trace: ", e);
-
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Failed to parse payload: " + e.getMessage()));
         } catch (Exception e) {
-            // 기타 예외 로그
             log.error("Unexpected error processing Slack interaction: {}", e.getMessage());
             log.error("Payload content: {}", payloadStr);
             log.error("Stack trace: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Internal server error: " + e.getMessage()));
         }
-
     }
-
-
-
 }
+
+
+
+
