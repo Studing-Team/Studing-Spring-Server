@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import studing.studing_server.common.dto.SuccessMessage;
 import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.member.service.MemberVerificationService;
-
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/admin")
 @RequiredArgsConstructor
@@ -46,15 +47,24 @@ public class AdminController {
             Map<String, String> response = new HashMap<>();
             response.put("actionId", actionId);
             response.put("memberId", memberId);
+            // 성공 로그
+            log.info("Slack Interaction Success - ActionId: {}, MemberId: {}", actionId, memberId);
 
             return ResponseEntity.ok(response);
 
         } catch (JsonProcessingException e) {
+            // JSON 파싱 에러 로그
+            log.error("Failed to parse Slack payload: {}", e.getMessage());
+            log.error("Payload content: {}", payloadStr);
+            log.error("Stack trace: ", e);
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", "Failed to parse payload: " + e.getMessage()));
         } catch (Exception e) {
-
+            // 기타 예외 로그
+            log.error("Unexpected error processing Slack interaction: {}", e.getMessage());
+            log.error("Payload content: {}", payloadStr);
+            log.error("Stack trace: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Internal server error: " + e.getMessage()));
         }
