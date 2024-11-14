@@ -81,7 +81,7 @@ public class MemberService {
                                                             "• *학과:* %s\n" +
                                                             "\n*부가 정보*\n" +
                                                             "• *현재 권한:* %s\n" +
-                                                            "• *마케팅 동의:* %s",
+                                                            "• *마케팅 .동의:* %s",
 
                                                     member.getName(),
                                                     member.getStudentNumber(),
