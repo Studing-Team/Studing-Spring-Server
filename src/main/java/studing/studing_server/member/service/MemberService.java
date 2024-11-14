@@ -23,6 +23,7 @@ import studing.studing_server.member.dto.CheckLoginIdRequest;
 import studing.studing_server.member.dto.MemberCreateRequest;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
+import studing.studing_server.slack.SlackNotificationService;
 import studing.studing_server.universityData.entity.Department;
 import studing.studing_server.universityData.repository.DepartmentRepository;
 
@@ -37,11 +38,10 @@ public class MemberService {
     private final S3Service s3Service;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final SlackNotificationService slackNotificationService;
 
-    @Value("${slack.webhook.url}")
-    private String webhookUrl;
 
-    private final Slack slack = Slack.getInstance();
+
 
 
     @Transactional
@@ -63,68 +63,7 @@ public class MemberService {
 
         memberRepository.save(member);
 
-        try {
-            Payload payload = Payload.builder()
-                    .blocks(Arrays.asList(
-                            SectionBlock.builder()
-                                    .text(MarkdownTextObject.builder()
-                                            .text(String.format(
-                                                    "*기본 정보*\n" +
-
-                                                            "• *이름:* %s\n" +
-                                                            "• *학번:* %s\n" +
-                                                            "• *입학번호:* %d\n" +
-                                                            "• *로그인 ID:* %s\n" +
-                                                            "\n*소속 정보*\n" +
-                                                            "• *대학교:* %s\n" +
-                                                            "• *단과대학:* %s\n" +
-                                                            "• *학과:* %s\n" +
-                                                            "\n*부가 정보*\n" +
-                                                            "• *현재 권한:* %s\n" +
-                                                            "• *마케팅 .동의:* %s",
-
-                                                    member.getName(),
-                                                    member.getStudentNumber(),
-                                                    member.getAdmissionNumber(),
-                                                    member.getLoginIdentifier(),
-                                                    member.getMemberUniversity(),
-                                                    member.getMemberCollegeDepartment(),
-                                                    member.getMemberDepartment(),
-                                                    member.getRole(),
-                                                            member.getMarketingAgreement() ? "동의" : "미동의"
-                                            ))
-                                            .build())
-                                    .build(),
-                            ImageBlock.builder()
-                                    .imageUrl("https://studing-static-files.s3.ap-northeast-2.amazonaws.com/" + imageUrl)
-                                    .altText("학생증 이미지")
-                                    .build(),
-                            ActionsBlock.builder()
-                                    .elements(Arrays.asList(
-                                            ButtonElement.builder()
-                                                    .text(PlainTextObject.builder().text("승인").build())
-                                                    .style("primary")
-                                                    .value(member.getId().toString())
-                                                    .actionId("approve_member")
-                                                    .build(),
-                                            ButtonElement.builder()
-                                                    .text(PlainTextObject.builder().text("승인 불가").build())
-                                                    .style("danger")
-                                                    .value(member.getId().toString())
-                                                    .actionId("reject_member")
-                                                    .build()
-                                    ))
-                                    .build()
-                    ))
-                    .build();
-
-            WebhookResponse response = slack.send(webhookUrl, payload);
-            if (response.getCode() != 200) {
-                log.error("Failed to send Slack notification. Response: {}", response);
-            }
-        } catch (IOException e) {
-            log.error("Failed to send Slack notification", e);
-        }
+        slackNotificationService.sendMemberVerificationRequest(member, imageUrl);
 
 
         }
