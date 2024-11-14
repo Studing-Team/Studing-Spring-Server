@@ -1,5 +1,6 @@
 package studing.studing_server.slack;
 
+
 import com.slack.api.Slack;
 import com.slack.api.model.block.ActionsBlock;
 import com.slack.api.model.block.ImageBlock;

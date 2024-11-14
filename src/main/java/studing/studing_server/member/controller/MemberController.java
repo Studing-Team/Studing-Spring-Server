@@ -11,6 +11,7 @@ import studing.studing_server.common.exception.message.BusinessException;
 import studing.studing_server.common.exception.message.ErrorMessage;
 import studing.studing_server.member.dto.CheckLoginIdRequest;
 import studing.studing_server.member.dto.MemberCreateRequest;
+import studing.studing_server.member.dto.SignUpResponse;
 import studing.studing_server.member.service.MemberService;
 
 @RestController
@@ -33,12 +34,13 @@ public class MemberController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<SuccessStatusResponse<Void>> signUp(@ModelAttribute MemberCreateRequest memberCreateRequest) {
-
-        memberService.signUp(memberCreateRequest);
+    public ResponseEntity<SuccessStatusResponse<SignUpResponse>> signUp(@ModelAttribute MemberCreateRequest memberCreateRequest) {
+        SignUpResponse response = memberService.signUp(memberCreateRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(SuccessStatusResponse.of(SuccessMessage.SIGNUP_SUCCESS, null));
+                .body(SuccessStatusResponse.of(SuccessMessage.SIGNUP_SUCCESS, response));
     }
+
+
 
 
 }

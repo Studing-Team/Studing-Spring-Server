@@ -1,19 +1,7 @@
 package studing.studing_server.member.service;
 
-import com.slack.api.Slack;
-import com.slack.api.model.block.ActionsBlock;
-import com.slack.api.model.block.ImageBlock;
-import com.slack.api.model.block.SectionBlock;
-import com.slack.api.model.block.composition.MarkdownTextObject;
-import com.slack.api.model.block.composition.PlainTextObject;
-import com.slack.api.model.block.element.ButtonElement;
-import com.slack.api.webhook.Payload;
-import com.slack.api.webhook.WebhookResponse;
-import java.util.Arrays;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 import studing.studing_server.external.S3Service;
 import studing.studing_server.member.dto.CheckLoginIdRequest;
 import studing.studing_server.member.dto.MemberCreateRequest;
+import studing.studing_server.member.dto.SignUpResponse;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.slack.SlackNotificationService;
@@ -45,7 +34,7 @@ public class MemberService {
 
 
     @Transactional
-    public void signUp(MemberCreateRequest memberCreateRequest) {
+    public SignUpResponse signUp(MemberCreateRequest memberCreateRequest) {
         String imageUrl = uploadStudentCardImage(memberCreateRequest.studentCardImage());
 
         // departmentName과 memberUniversity 기반으로 department 조회
@@ -61,11 +50,13 @@ public class MemberService {
 
         Member member = createMember(memberCreateRequest, imageUrl, memberCollegeDepartment);
 
-        memberRepository.save(member);
+        Member savedMember = memberRepository.save(member);
+
+
 
         slackNotificationService.sendMemberVerificationRequest(member, imageUrl);
 
-
+        return new SignUpResponse(savedMember.getId());
         }
 
 
