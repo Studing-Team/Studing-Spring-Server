@@ -6,7 +6,8 @@ public record LogoResponse(
         String collegeDepartmentLogoImage,
         String collegeDepartmentName,
         String departmentLogoImage,
-        String departmentName
+        String departmentName,
+        boolean isRegisteredDepartment
 ) {
 
 }

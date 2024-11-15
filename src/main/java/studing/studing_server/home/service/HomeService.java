@@ -66,8 +66,8 @@ public class HomeService {
                 .findByCollegeDepartmentNameAndUniversity_UniversityName(member.getMemberCollegeDepartment(), university.getUniversityName())
                 .orElseThrow(() -> new IllegalArgumentException("해당 단과대를 찾을 수 없습니다."));
 
-//        Department department = departmentRepository.findByDepartmentNameAndUniversity_UniversityName(member.getMemberDepartment(), university.getUniversityName())
-//                .orElseThrow(() -> new IllegalArgumentException("해당 학과를 찾을 수 없습니다."));
+        Department department = departmentRepository.findByDepartmentNameAndUniversity_UniversityName(member.getMemberDepartment(), university.getUniversityName())
+                .orElseThrow(() -> new IllegalArgumentException("해당 학과를 찾을 수 없습니다."));
 
         String universityLogoUrl = university.getUniversityLogoImage() != null ?
                 S3_BUCKET_URL + university.getUniversityLogoImage() : null;
@@ -75,32 +75,17 @@ public class HomeService {
         String collegeDepartmentLogoUrl = collegeDepartment.getCollegeDepartmentLogoImage() != null ?
                 S3_BUCKET_URL + collegeDepartment.getCollegeDepartmentLogoImage() : null;
 
-//        String departmentLogoUrl = department.getDepartmentImage() != null ?
-//                S3_BUCKET_URL + department.getDepartmentImage() : null;
+        String departmentLogoUrl = department.getDepartmentImage() != null ?
+                S3_BUCKET_URL + department.getDepartmentImage() : null;
 
 
-        // department 관련 정보는 조건부로 설정
-        String departmentLogoUrl = null;
-        String departmentName = null;
-        // memberRepository에서 조건에 맞는 부서 담당자가 있는지 확인
-        boolean hasDepartmentManager = memberRepository.existsByMemberUniversityAndMemberDepartmentAndRole(
+
+
+        boolean isRegisteredDepartment= memberRepository.existsByMemberUniversityAndMemberDepartmentAndRole(
                 member.getMemberUniversity(),
                 member.getMemberDepartment(),
                 "ROLE_DEPARTMENT"
         );
-
-        if (hasDepartmentManager) {
-            Department department = departmentRepository.findByDepartmentNameAndUniversity_UniversityName(
-                    member.getMemberDepartment(),
-                    university.getUniversityName()
-            ).orElseThrow(() -> new IllegalArgumentException("해당 학과를 찾을 수 없습니다."));
-
-            departmentLogoUrl = department.getDepartmentImage() != null ?
-                    S3_BUCKET_URL + department.getDepartmentImage() : null;
-            departmentName = department.getDepartmentName();
-        }
-
-
 
 
         return new LogoResponse(
@@ -108,8 +93,9 @@ public class HomeService {
                 "총학생회",
                 collegeDepartmentLogoUrl,
                 collegeDepartment.getCollegeDepartmentName(),
-                departmentLogoUrl,    // 조건에 따라 null 또는 실제 값
-                departmentName        // 조건에 따라 null 또는 실제 값
+                departmentLogoUrl,
+                department.getDepartmentName(),
+                isRegisteredDepartment
         );
     }
 
@@ -265,15 +251,15 @@ public class HomeService {
                 if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
                         && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
                     matches = true;
-                    writerInfo = "총학생회";
+                    writerInfo = "총학생회[총학생회]";
                 } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
                         && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
                     matches = true;
-                    writerInfo = noticeWriter.getMemberCollegeDepartment();
+                    writerInfo = noticeWriter.getMemberCollegeDepartment()+"[단과대]";
                 } else if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
                         && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
                     matches = true;
-                    writerInfo = noticeWriter.getMemberDepartment();
+                    writerInfo = noticeWriter.getMemberDepartment()+"[학과]";
                 }
             } else {
                 switch(categorie) {
@@ -289,7 +275,7 @@ public class HomeService {
                         if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
                                 && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
                             matches = true;
-                            writerInfo = noticeWriter.getMemberCollegeDepartment();
+                            writerInfo = noticeWriter.getMemberCollegeDepartment()+"[단과대]";
                         }
                         break;
 
@@ -297,7 +283,7 @@ public class HomeService {
                         if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
                                 && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
                             matches = true;
-                            writerInfo = noticeWriter.getMemberDepartment();
+                            writerInfo = noticeWriter.getMemberDepartment()+"[학과]";
                         }
                         break;
 
