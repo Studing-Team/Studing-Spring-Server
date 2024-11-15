@@ -3,6 +3,7 @@ package studing.studing_server.notification.service;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
+import com.google.firebase.messaging.Notification;
 import java.io.IOException;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class NotificationService {
 
 
     private final FCMTokenRepository fcmTokenRepository;
+    private final FirebaseMessaging  firebaseMessaging;
 
     @Transactional
     public void saveToken(Member member, String token) {
@@ -38,20 +40,20 @@ public class NotificationService {
         String token = fcmTokenRepository.findValidTokenByMemberId(memberId)
                 .orElseThrow(() -> new RuntimeException("No valid token found for member: " + memberId));
 
+        Notification notification = Notification.builder().setTitle(title).setBody(body).build();
 
 
         // 메시지 구성
         Message message = Message.builder()
-                .putData("title", title)
-                .putData("content", body)
                 .setToken(token) // 조회한 토큰 값을 사용
+                .setNotification(notification)
                 .build();
 
         try {
             // 메시지 전송
             System.out.println("ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ " );
-
-            String response = FirebaseMessaging.getInstance().send(message);
+            String response= firebaseMessaging.send(message);
+           // String response = FirebaseMessaging.getInstance().send(message);
             System.out.println("Message sent successfully: " + response);
 
         } catch (FirebaseMessagingException e) {
