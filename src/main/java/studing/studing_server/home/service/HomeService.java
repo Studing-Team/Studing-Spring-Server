@@ -66,8 +66,8 @@ public class HomeService {
                 .findByCollegeDepartmentNameAndUniversity_UniversityName(member.getMemberCollegeDepartment(), university.getUniversityName())
                 .orElseThrow(() -> new IllegalArgumentException("해당 단과대를 찾을 수 없습니다."));
 
-        Department department = departmentRepository.findByDepartmentNameAndUniversity_UniversityName(member.getMemberDepartment(), university.getUniversityName())
-                .orElseThrow(() -> new IllegalArgumentException("해당 학과를 찾을 수 없습니다."));
+//        Department department = departmentRepository.findByDepartmentNameAndUniversity_UniversityName(member.getMemberDepartment(), university.getUniversityName())
+//                .orElseThrow(() -> new IllegalArgumentException("해당 학과를 찾을 수 없습니다."));
 
         String universityLogoUrl = university.getUniversityLogoImage() != null ?
                 S3_BUCKET_URL + university.getUniversityLogoImage() : null;
@@ -75,16 +75,41 @@ public class HomeService {
         String collegeDepartmentLogoUrl = collegeDepartment.getCollegeDepartmentLogoImage() != null ?
                 S3_BUCKET_URL + collegeDepartment.getCollegeDepartmentLogoImage() : null;
 
-        String departmentLogoUrl = department.getDepartmentImage() != null ?
-                S3_BUCKET_URL + department.getDepartmentImage() : null;
+//        String departmentLogoUrl = department.getDepartmentImage() != null ?
+//                S3_BUCKET_URL + department.getDepartmentImage() : null;
+
+
+        // department 관련 정보는 조건부로 설정
+        String departmentLogoUrl = null;
+        String departmentName = null;
+        // memberRepository에서 조건에 맞는 부서 담당자가 있는지 확인
+        boolean hasDepartmentManager = memberRepository.existsByMemberUniversityAndMemberDepartmentAndRole(
+                member.getMemberUniversity(),
+                member.getMemberDepartment(),
+                "ROLE_DEPARTMENT"
+        );
+
+        if (hasDepartmentManager) {
+            Department department = departmentRepository.findByDepartmentNameAndUniversity_UniversityName(
+                    member.getMemberDepartment(),
+                    university.getUniversityName()
+            ).orElseThrow(() -> new IllegalArgumentException("해당 학과를 찾을 수 없습니다."));
+
+            departmentLogoUrl = department.getDepartmentImage() != null ?
+                    S3_BUCKET_URL + department.getDepartmentImage() : null;
+            departmentName = department.getDepartmentName();
+        }
+
+
+
 
         return new LogoResponse(
                 universityLogoUrl,
                 "총학생회",
                 collegeDepartmentLogoUrl,
                 collegeDepartment.getCollegeDepartmentName(),
-                departmentLogoUrl,
-                department.getDepartmentName()
+                departmentLogoUrl,    // 조건에 따라 null 또는 실제 값
+                departmentName        // 조건에 따라 null 또는 실제 값
         );
     }
 
