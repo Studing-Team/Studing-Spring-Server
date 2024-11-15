@@ -1,7 +1,10 @@
 package studing.studing_server.notification.service;
 
-import com.google.firebase.messaging.*;
-import java.util.stream.Collectors;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.Message;
+import java.io.IOException;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -10,16 +13,13 @@ import studing.studing_server.member.entity.Member;
 import studing.studing_server.notification.entity.FCMToken;
 import studing.studing_server.notification.repository.FCMTokenRepository;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final FirebaseMessaging firebaseMessaging;
+
     private final FCMTokenRepository fcmTokenRepository;
 
     @Transactional
@@ -33,86 +33,42 @@ public class NotificationService {
         fcmTokenRepository.save(fcmToken);
     }
 
-    public void sendNotificationToMember(Long memberId, String title, String body) {
+    public void sendNotificationToMember(Long memberId, String title, String body){
+
+        String token = fcmTokenRepository.findValidTokenByMemberId(memberId)
+                .orElseThrow(() -> new RuntimeException("No valid token found for member: " + memberId));
 
 
 
-
-        List<FCMToken> tokens = fcmTokenRepository.findAllValidTokensByMemberId(memberId);
-        System.out.println("ddddddd");
-
-        log.info("Found {} valid tokens for member {}", tokens.size(), memberId);
-        tokens.forEach(token -> log.info("Token: {}", token.getToken()));
-
-
-
-        sendNotification(tokens, title, body);
-
-
-
-
-
-    }
-
-
-    private void sendNotification(List<FCMToken> tokens, String title, String body) {
-
-        if (tokens == null || tokens.isEmpty()) {
-            log.warn("No tokens provided for notification");
-            return;
-        }
-
-        System.out.println("aaaaa");
-        List<String> validTokens = tokens.stream()
-                .map(FCMToken::getToken)
-                .filter(token -> token != null && !token.isEmpty())
-                .collect(Collectors.toList());
-        System.out.println("bbbb");
-        if (validTokens.isEmpty()) {
-            log.warn("No valid tokens found after filtering");
-            return;
-        }
-
-
-        System.out.println("cccc");
-
+        // 메시지 구성
+        Message message = Message.builder()
+                .putData("title", title)
+                .putData("content", body)
+                .setToken(token) // 조회한 토큰 값을 사용
+                .build();
 
         try {
-            System.out.println("dddddd");
-            MulticastMessage message = MulticastMessage.builder()
-                    .setNotification(Notification.builder()
-                            .setTitle(title)
-                            .setBody(body)
-                            .build())
-                    .addAllTokens(validTokens)
-                    .build();
-            System.out.println("eeee");
+            // 메시지 전송
+            System.out.println("ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ " );
 
-            BatchResponse response = firebaseMessaging.sendMulticast(message);
-            log.info("FCM notification sent successfully: {}", response.getSuccessCount());
+            String response = FirebaseMessaging.getInstance().send(message);
+            System.out.println("Message sent successfully: " + response);
 
-            System.out.println("ffff");
-            System.out.println(response);
-            System.out.println("gggg");
-            handleFailedMessages(response, tokens);
-            System.out.println("hhh");
         } catch (FirebaseMessagingException e) {
-            log.error("Failed to send FCM notification", e);
-            System.out.println("pppppp");
-            // 로깅 및 예외 처리
+            e.printStackTrace();
+            System.out.println("Failed to send message");
         }
+
+
+
+
     }
 
-    private void handleFailedMessages(BatchResponse response, List<FCMToken> tokens) {
-        if (response.getFailureCount() > 0) {
-            List<SendResponse> responses = response.getResponses();
-            for (int i = 0; i < responses.size(); i++) {
-                if (!responses.get(i).isSuccessful()) {
-                    FCMToken failedToken = tokens.get(i);
-                    failedToken.disable();  // 실패한 토큰 비활성화
-                    fcmTokenRepository.save(failedToken);
-                }
-            }
-        }
-    }
+
+
+
+
+
+
+
 }

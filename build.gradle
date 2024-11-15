@@ -35,8 +35,11 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
+	// Firebase Admin SDK
+		implementation 'com.google.firebase:firebase-admin:7.3.0'
 
-	implementation 'com.google.firebase:firebase-admin:9.1.1'
+
+
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
 

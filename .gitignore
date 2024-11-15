@@ -38,4 +38,5 @@ out/
 
 **/.DS_Store
 **/application.yml
-**/studing-fcm-firebase-adminsdk-*.json
+
+**studing-a8837-firebase-adminsdk-*.json
