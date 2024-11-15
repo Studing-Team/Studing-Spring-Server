@@ -663,6 +663,19 @@ public class NoticeService {
                         .filter(url -> !url.isEmpty())
                         .collect(Collectors.toList());
 
+
+                // 저장 여부 확인
+                boolean saveCheck = saveNoticeRepository.existsByMemberIdAndNoticeId(
+                        currentMember.getId(),
+                        notice.getId()
+                );
+                // 좋아요 여부 확인
+                boolean likeCheck = noticeLikeRepository.existsByMemberIdAndNoticeId(
+                        currentMember.getId(),
+                        notice.getId()
+                );
+
+
                 unreadNotices.add(new UnreadNoticeResponse(
                         notice.getId(),
                         notice.getTitle(),
@@ -674,7 +687,9 @@ public class NoticeService {
                         affiliationName,
                         logoImage,
                         notice.getTag(),
-                        images
+                        images,
+                        saveCheck,    // 추가
+                        likeCheck     // 추가
                 ));
             }
         }

@@ -15,6 +15,8 @@ public record UnreadNoticeResponse(
         String affilitionName,
         String logoImage,
         String tag,
-        List<String> images
+        List<String> images,
+         boolean saveCheck,    // 추가
+        boolean likeCheck    // 추가
 ) {}
 
