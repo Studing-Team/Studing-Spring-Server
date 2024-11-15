@@ -349,15 +349,15 @@ public class HomeService {
                 .map(savedNotice -> {
                     Notice notice = savedNotice.getNotice();
                     Member noticeWriter = notice.getMember();
-                    String affiliation;
+                    String affiliation="";
 
                     // 작성자의 권한에 따른 소속 정보 설정
                     if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())) {
-                        affiliation = "총학생회";
+                        affiliation = "총학생회[총학생회]";
                     } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())) {
-                        affiliation = noticeWriter.getMemberCollegeDepartment();
-                    } else {
-                        affiliation = noticeWriter.getMemberDepartment();
+                        affiliation = noticeWriter.getMemberCollegeDepartment()+"[단과대]";
+                    } else if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())) {
+                        affiliation = noticeWriter.getMemberDepartment()+"[학과]";
                     }
 
                     return new SavedNoticeResponse(
