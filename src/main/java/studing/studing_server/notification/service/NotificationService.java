@@ -69,7 +69,7 @@ public class NotificationService {
                             .setTitle(title)
                             .setBody(body)
                             .build())
-                    .addAllTokens(tokens.stream().map(FCMToken::getToken).toList())
+                    .addAllTokens(validTokens)
                     .build();
             System.out.println("eeee");
 
