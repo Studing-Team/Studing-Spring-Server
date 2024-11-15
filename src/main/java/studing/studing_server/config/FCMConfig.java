@@ -17,21 +17,36 @@ import java.io.IOException;
 public class FCMConfig {
     @Bean
     FirebaseMessaging firebaseMessaging() throws IOException {
-        log.info("Initializing Firebase Messaging...");
+        log.info("Starting Firebase Messaging initialization...");
         try {
+            String resourcePath = "studing-fcm-firebase-adminsdk-ltwke-d4d183baf8.json";
+            log.info("Loading credentials from: {}", resourcePath);
+
+            ClassPathResource resource = new ClassPathResource(resourcePath);
+            if (!resource.exists()) {
+                log.error("Credentials file not found: {}", resourcePath);
+                throw new IOException("Credentials file not found");
+            }
+
             GoogleCredentials googleCredentials = GoogleCredentials
-                    .fromStream(new ClassPathResource("studing-fcm-firebase-adminsdk-ltwke-d4d183baf8.json").getInputStream());
+                    .fromStream(resource.getInputStream());
+            log.info("Credentials loaded successfully");
 
             FirebaseOptions firebaseOptions = FirebaseOptions.builder()
                     .setCredentials(googleCredentials)
                     .build();
+            log.info("Firebase options built successfully");
 
             if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(firebaseOptions);
-                log.info("Firebase Application has been initialized");
+                FirebaseApp app = FirebaseApp.initializeApp(firebaseOptions);
+                log.info("Firebase Application initialized: {}", app.getName());
+            } else {
+                log.info("Firebase Application already initialized");
             }
 
-            return FirebaseMessaging.getInstance();
+            FirebaseMessaging instance = FirebaseMessaging.getInstance();
+            log.info("Firebase Messaging instance created successfully");
+            return instance;
         } catch (Exception e) {
             log.error("Failed to initialize Firebase: ", e);
             throw e;

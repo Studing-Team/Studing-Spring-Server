@@ -34,9 +34,24 @@ public class NotificationService {
     }
 
     public void sendNotificationToMember(Long memberId, String title, String body) {
+
+
+
+
         List<FCMToken> tokens = fcmTokenRepository.findAllValidTokensByMemberId(memberId);
         System.out.println("ddddddd");
+
+        log.info("Found {} valid tokens for member {}", tokens.size(), memberId);
+        tokens.forEach(token -> log.info("Token: {}", token.getToken()));
+
+
+
         sendNotification(tokens, title, body);
+
+
+
+
+
     }
 
 
