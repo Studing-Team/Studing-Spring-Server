@@ -146,15 +146,15 @@ public class NoticeService {
             if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
                     && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
                 matches = true;
-                writerInfo = "총학생회";
+                writerInfo = "총학생회[총학생회]";
             } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())
                     && currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
                 matches = true;
-                writerInfo = noticeWriter.getMemberCollegeDepartment();
+                writerInfo = noticeWriter.getMemberCollegeDepartment()+"[단과대]";
             } else if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
                     && currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
                 matches = true;
-                writerInfo = noticeWriter.getMemberDepartment();
+                writerInfo = noticeWriter.getMemberDepartment()+"[학과]";
             }
 
             if (matches) {
