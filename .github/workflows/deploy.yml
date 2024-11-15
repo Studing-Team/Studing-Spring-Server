@@ -23,7 +23,7 @@ jobs:
 
       - name: Create Firebase Admin SDK json file
         run: |
-          echo '${{ secrets.FIREBASE_ADMIN_SDK }}' > ./src/main/resources/studing-fcm-firebase-adminsdk-ltwke-d4d183baf8.json
+          echo '${{ secrets.FIREBASE_ADMIN_SDK }}' > ./src/main/resources/studing-a8837-firebase-adminsdk-wl5fu-e2415a1c7f.json
 
 
       - name: 테스트 및 빌드하기
