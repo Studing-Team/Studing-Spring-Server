@@ -23,6 +23,7 @@ import studing.studing_server.home.dto.UnreadNoticeCountResponse;
 import studing.studing_server.home.service.HomeService;
 import studing.studing_server.home.dto.notice.RecentNoticesResponse;
 import studing.studing_server.home.dto.notice.SavedNoticesResponse;
+import studing.studing_server.notices.dto.RecentNoticesResponse3;
 
 
 @RestController
@@ -88,11 +89,11 @@ public class HomeController {
 
 
     @PostMapping("/recent-notices")
-    public ResponseEntity<SuccessStatusResponse<RecentNoticesResponse>> getRecentNotices(
+    public ResponseEntity<SuccessStatusResponse<RecentNoticesResponse3>> getRecentNotices(
             HttpServletRequest request,
             @RequestBody UnreadNoticeCountRequest categorieRequest) {
         String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
-        RecentNoticesResponse response = homeService.getRecentNotices(loginIdentifier, categorieRequest.categorie());
+        RecentNoticesResponse3 response = homeService.getRecentNotices(loginIdentifier, categorieRequest.categorie());
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

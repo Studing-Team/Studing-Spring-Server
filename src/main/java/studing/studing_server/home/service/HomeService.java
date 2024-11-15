@@ -20,6 +20,8 @@ import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.notices.dto.NoticeResponse;
 import studing.studing_server.home.dto.notice.RecentNoticesResponse;
+import studing.studing_server.notices.dto.NoticeResponse3;
+import studing.studing_server.notices.dto.RecentNoticesResponse3;
 import studing.studing_server.notices.dto.SavedNoticeResponse;
 import studing.studing_server.home.dto.notice.SavedNoticesResponse;
 import studing.studing_server.notices.entity.Notice;
@@ -218,7 +220,7 @@ public class HomeService {
 
 
     @Transactional(readOnly = true)
-    public RecentNoticesResponse getRecentNotices(String loginIdentifier, String categorie) {
+    public RecentNoticesResponse3 getRecentNotices(String loginIdentifier, String categorie) {
 
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
@@ -227,7 +229,7 @@ public class HomeService {
                 currentMember.getMemberUniversity()
         );
 
-        List<NoticeResponse> filteredNotices = new ArrayList<>();
+        List<NoticeResponse3> filteredNotices = new ArrayList<>();
 
         for (Notice notice : recentNotices) {
             Member noticeWriter = notice.getMember();
@@ -300,7 +302,7 @@ public class HomeService {
                         notice.getId()
                 );
 
-                filteredNotices.add(new NoticeResponse(
+                filteredNotices.add(new NoticeResponse3(
                         notice.getId(),
                         notice.getTitle(),
                         notice.getContent(),
@@ -311,12 +313,13 @@ public class HomeService {
                         image,
                         notice.getCreatedAt(),
                         saveCheck,
-                        likeCheck
+                        likeCheck,
+                        categorie
                 ));
             }
         }
 
-        return new RecentNoticesResponse(filteredNotices);
+        return new RecentNoticesResponse3(filteredNotices);
     }
 
 
