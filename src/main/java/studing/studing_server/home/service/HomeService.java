@@ -267,7 +267,7 @@ public class HomeService {
                         if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
                                 && currentMember.getMemberUniversity().equals(noticeWriter.getMemberUniversity())) {
                             matches = true;
-                            writerInfo = "총학생회";
+                            writerInfo = "총학생회[총학생회]";
                         }
                         break;
 
