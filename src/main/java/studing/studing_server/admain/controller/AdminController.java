@@ -40,7 +40,18 @@ public class AdminController {
                 memberVerificationService.verifyMember(Long.parseLong(memberId), "ROLE_USER");
             } else if ("reject_member".equals(actionId)) {
                 memberVerificationService.verifyMember(Long.parseLong(memberId), "ROLE_DENY");
+            } else if ("university_member".equals(actionId)) {
+                memberVerificationService.verifyMember(Long.parseLong(memberId), "ROLE_UNIVERSITY");
+            }else if ("college_member".equals(actionId)) {
+                memberVerificationService.verifyMember(Long.parseLong(memberId), "ROLE_COLLEGE");
+            }else if ("department_member".equals(actionId)) {
+                memberVerificationService.verifyMember(Long.parseLong(memberId), "ROLE_DEPARTMENT");
             }
+
+
+
+
+
 
             Map<String, String> response = new HashMap<>();
             response.put("actionId", actionId);

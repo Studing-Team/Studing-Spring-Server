@@ -73,7 +73,11 @@ public class SlackNotificationService {
         return ActionsBlock.builder()
                 .elements(Arrays.asList(
                         createButton("승인", "primary", "approve_member", memberId),
-                        createButton("승인 불가", "danger", "reject_member", memberId)
+                        createButton("승인 불가", "danger", "reject_member", memberId),
+                        createButton("총학생회 권한 부여", "primary", "university_member", memberId),
+                        createButton("단과대 학생회 권한 부여", "primary", "college_member", memberId),
+                        createButton("학과 학생회 권한 부여", "primary", "department_member", memberId)
+
                 ))
                 .build();
     }
