@@ -25,10 +25,9 @@ public class WithdrawnMember extends BaseTimeEntity {
     private String memberDepartment;
     private String role;
     private LocalDateTime withdrawnAt;
-    private String withdrawalReason;  // 탈퇴 사유 (선택적)
 
     @Builder
-    public WithdrawnMember(Member member, String withdrawalReason) {
+    public WithdrawnMember(Member member) {
         this.id = member.getId();
         this.admissionNumber = member.getAdmissionNumber();
         this.name = member.getName();
@@ -39,6 +38,5 @@ public class WithdrawnMember extends BaseTimeEntity {
         this.memberDepartment = member.getMemberDepartment();
         this.role = member.getRole();
         this.withdrawnAt = LocalDateTime.now();
-        this.withdrawalReason = withdrawalReason;
     }
 }

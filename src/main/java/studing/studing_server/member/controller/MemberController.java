@@ -1,10 +1,12 @@
 package studing.studing_server.member.controller;
 
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import studing.studing_server.auth.jwt.JWTUtil;
 import studing.studing_server.common.dto.SuccessMessage;
 import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.common.exception.message.BusinessException;
@@ -20,6 +22,8 @@ import studing.studing_server.member.service.MemberService;
 public class MemberController {
 
     private final MemberService memberService;
+    private final JWTUtil jwtUtil;
+
 
 
     @PostMapping("/checkid")
@@ -41,6 +45,18 @@ public class MemberController {
     }
 
 
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<SuccessStatusResponse<Void>> withdrawMember(
+            HttpServletRequest request
+          ) {
+
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+
+        memberService.withdrawMember(loginIdentifier);
+
+        return ResponseEntity.ok()
+                .body(SuccessStatusResponse.of(SuccessMessage.MEMBER_WITHDRAWAL_SUCCESS));
+    }
 
 
 }

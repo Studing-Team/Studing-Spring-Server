@@ -17,6 +17,7 @@ public enum SuccessMessage {
     SIGNIN_SUCCESS(HttpStatus.OK.value(),"로그인에 성공하였습니다."),
     LOGO_FETCH_SUCCESS(HttpStatus.OK.value(),"로고와 이름 데이터 조회에 성공하였습니다."),
     DATA_FETCH_SUCCESS(HttpStatus.OK.value(),"회원 데이터 조회에 성공하였습니다."),
+    MEMBER_WITHDRAWAL_SUCCESS(HttpStatus.OK.value(), "회원 탈퇴가 완료되었습니다."),
     // SuccessMessage에 추가
     NOTICE_SAVE_CANCEL_SUCCESS(HttpStatus.OK.value(), "공지사항 저장 취소에 성공하였습니다."),
     // SuccessMessage에 추가

@@ -11,7 +11,9 @@ import studing.studing_server.member.dto.CheckLoginIdRequest;
 import studing.studing_server.member.dto.MemberCreateRequest;
 import studing.studing_server.member.dto.SignUpResponse;
 import studing.studing_server.member.entity.Member;
+import studing.studing_server.member.entity.WithdrawnMember;
 import studing.studing_server.member.repository.MemberRepository;
+import studing.studing_server.member.repository.WithdrawnMemberRepository;
 import studing.studing_server.slack.SlackNotificationService;
 import studing.studing_server.universityData.entity.Department;
 import studing.studing_server.universityData.repository.DepartmentRepository;
@@ -25,7 +27,7 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final DepartmentRepository departmentRepository;
     private final S3Service s3Service;
-
+    private final WithdrawnMemberRepository withdrawnMemberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SlackNotificationService slackNotificationService;
 
@@ -104,13 +106,20 @@ public class MemberService {
 
 
 
+    public void withdrawMember(String loginIdentifier) {
+        Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
+        // 회원 정보를 WithdrawnMember 테이블로 이동
+        WithdrawnMember withdrawnMember = WithdrawnMember.builder()
+                .member(member)
+                .build();
 
+        withdrawnMemberRepository.save(withdrawnMember);
 
-
-
-
-
+        // 기존 회원 정보 삭제
+        memberRepository.delete(member);
+    }
 
 
 }
