@@ -528,7 +528,7 @@ public class NoticeService {
                     image = originalImage != null ? S3_BUCKET_URL + originalImage : "";
                 }
 
-                noticeResponses.add(new SavedNoticeResponse2(
+                noticeResponses.add(SavedNoticeResponse2.of(
                         notice.getId(),
                         notice.getTitle(),
                         notice.getCreatedAt(),
