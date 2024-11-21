@@ -360,7 +360,7 @@ public class HomeService {
                         affiliation = noticeWriter.getMemberDepartment()+"[학과]";
                     }
 
-                    return new SavedNoticeResponse(
+                    return SavedNoticeResponse.from(
                             notice.getId(),
                             affiliation,
                             notice.getTitle(),
