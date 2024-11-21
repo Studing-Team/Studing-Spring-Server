@@ -176,7 +176,7 @@ public class NoticeService {
                         notice.getId()
                 );
 
-                filteredNotices.add(new NoticeResponse(
+                filteredNotices.add(NoticeResponse.from(
                         notice.getId(),
                         notice.getTitle(),
                         notice.getContent(),
