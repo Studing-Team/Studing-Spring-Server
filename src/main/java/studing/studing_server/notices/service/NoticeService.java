@@ -447,7 +447,7 @@ public class NoticeService {
                 .filter(url -> !url.isEmpty())
                 .collect(Collectors.toList());
 
-        return new NoticeDetailResponse(
+        return NoticeDetailResponse.from(
                 notice.getId(),
                 notice.getTitle(),
                 notice.getContent(),
