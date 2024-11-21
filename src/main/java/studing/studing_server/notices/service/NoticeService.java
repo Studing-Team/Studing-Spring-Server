@@ -676,7 +676,7 @@ public class NoticeService {
                 );
 
 
-                unreadNotices.add(new UnreadNoticeResponse(
+                unreadNotices.add(UnreadNoticeResponse.from(
                         notice.getId(),
                         notice.getTitle(),
                         notice.getContent(),
@@ -688,8 +688,8 @@ public class NoticeService {
                         logoImage,
                         notice.getTag(),
                         images,
-                        saveCheck,    // 추가
-                        likeCheck     // 추가
+                        saveCheck,
+                        likeCheck
                 ));
             }
         }
