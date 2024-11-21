@@ -313,7 +313,7 @@ public class HomeService {
                         notice.getId()
                 );
 
-                filteredNotices.add(new NoticeResponse3(
+                filteredNotices.add(NoticeResponse3.from(
                         notice.getId(),
                         notice.getTitle(),
                         notice.getContent(),
