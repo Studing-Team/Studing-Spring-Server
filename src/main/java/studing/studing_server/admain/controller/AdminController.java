@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import studing.studing_server.common.dto.SuccessMessage;
 import studing.studing_server.common.dto.SuccessStatusResponse;
+import studing.studing_server.member.entity.Member;
+import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.member.service.MemberVerificationService;
 @Slf4j
 @RestController
@@ -25,7 +27,7 @@ import studing.studing_server.member.service.MemberVerificationService;
 public class AdminController {
 
     private final MemberVerificationService memberVerificationService;
-
+    private final MemberRepository memberRepository;
     @PostMapping()
     public ResponseEntity<Map<String, String>> handleSlackInteraction(@RequestParam("payload") String payloadStr) {
         try {
@@ -34,6 +36,27 @@ public class AdminController {
 
             String actionId = payload.path("actions").get(0).path("action_id").asText();
             String memberId = payload.path("actions").get(0).path("value").asText();
+
+
+            // memberId로 현재 회원 정보 조회
+            Member member = memberRepository.findById(Long.parseLong(memberId))
+                    .orElseThrow(() -> new IllegalArgumentException("Member not found with ID: " + memberId));
+
+            // 현재 회원의 role이 ROLE_UNUSER가 아닌 경우 처리 중단
+            if (!"ROLE_UNUSER".equals(member.getRole())) {
+                log.warn("Member verification failed - Member: {} already has role: {}",
+                        member.getId(),
+                        member.getRole());
+
+                return ResponseEntity.badRequest()
+                        .body(Map.of(
+                                "error", "Member already verified",
+                                "message", String.format("회원(ID: %d)은 이미 %s 권한을 가지고 있습니다.",
+                                        member.getId(),
+                                        translateRole(member.getRole()))
+                        ));
+            }
+
 
             // 버튼 액션에 따른 회원 검증
             if ("approve_member".equals(actionId)) {
@@ -74,6 +97,22 @@ public class AdminController {
                     .body(Map.of("error", "Internal server error: " + e.getMessage()));
         }
     }
+
+
+
+    private String translateRole(String role) {
+        return switch (role) {
+            case "ROLE_USER" -> "일반 사용자";
+            case "ROLE_UNIVERSITY" -> "총학생회";
+            case "ROLE_COLLEGE" -> "단과대학 학생회";
+            case "ROLE_DEPARTMENT" -> "학과 학생회";
+            case "ROLE_DENY" -> "거부됨";
+            case "ROLE_UNUSER" -> "미승인";
+            default -> role;
+        };
+    }
+
+
 }
 
 
