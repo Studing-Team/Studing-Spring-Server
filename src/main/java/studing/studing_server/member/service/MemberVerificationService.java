@@ -9,6 +9,7 @@ import studing.studing_server.member.entity.MemberStatus;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.notification.service.NotificationService;
 
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -24,30 +25,42 @@ public class MemberVerificationService {
         member.setRole(role);
         memberRepository.save(member);
 
-        if ("ROLE_USER".equals(role)) {
-            sendVerificationNotification(member, true);
-        } else {
-            sendVerificationNotification(member, false);
+        switch (role) {
+            case "ROLE_USER" -> sendVerificationNotification(member, NotificationType.USER);
+            case "ROLE_UNIVERSITY" -> sendVerificationNotification(member, NotificationType.UNIVERSITY);
+            case "ROLE_COLLEGE" -> sendVerificationNotification(member, NotificationType.COLLEGE);
+            case "ROLE_DEPARTMENT" -> sendVerificationNotification(member, NotificationType.DEPARTMENT);
+            case "ROLE_DENY" -> sendVerificationNotification(member, NotificationType.DENIED);
         }
     }
 
-    private void sendVerificationNotification(Member member, boolean isApproved) {
-        String title = isApproved ? "학교 인증 완료" : "학교 인증 거절";
-        String body = isApproved ?
-                String.format("%s님의 학교 인증이 완료되었습니다. 이제 Studing의 모든 서비스를 이용하실 수 있습니다.", member.getName()) :
-                String.format("%s님의 학교 인증이 거절되었습니다. 관리자에게 문의해주세요.", member.getName());
+    private enum NotificationType {
+        USER("학교 인증 완료", "%s님의 학교 인증이 완료되었습니다. 이제 Studing의 모든 서비스를 이용하실 수 있습니다."),
+        UNIVERSITY("총학생회 권한 부여", "%s님께 총학생회 권한이 부여되었습니다. 이제 총학생회 공지사항을 작성하실 수 있습니다."),
+        COLLEGE("단과대학 학생회 권한 부여", "%s님께 단과대학 학생회 권한이 부여되었습니다. 이제 단과대학 공지사항을 작성하실 수 있습니다."),
+        DEPARTMENT("학과 학생회 권한 부여", "%s님께 학과 학생회 권한이 부여되었습니다. 이제 학과 공지사항을 작성하실 수 있습니다."),
+        DENIED("학교 인증 거절", "%s님의 학교 인증이 거절되었습니다. 관리자에게 문의해주세요.");
+
+        private final String title;
+        private final String messageFormat;
+
+        NotificationType(String title, String messageFormat) {
+            this.title = title;
+            this.messageFormat = messageFormat;
+        }
+    }
+
+    private void sendVerificationNotification(Member member, NotificationType type) {
+        String body = String.format(type.messageFormat, member.getName());
 
         try {
             notificationService.sendNotificationToMember(
                     member.getId(),
-                    title,
+                    type.title,
                     body
             );
         } catch (Exception e) {
             log.error("Failed to send notification", e);
         }
     }
-
-
-
 }
