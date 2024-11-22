@@ -52,6 +52,13 @@ public class MemberVerificationService {
 
     private void sendVerificationNotification(Member member, NotificationType type) {
         String body = String.format(type.messageFormat, member.getName());
+        log.info("Sending verification notification - MemberId: {}, MemberName: {}, NotificationType: {}, Title: {}, Body: {}",
+                member.getId(),
+                member.getName(),
+                type.name(),
+                type.title,
+                body
+        );
 
         try {
             notificationService.sendNotificationToMember(
