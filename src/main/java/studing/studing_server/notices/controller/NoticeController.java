@@ -144,11 +144,17 @@ public class NoticeController {
             HttpServletRequest request,
             @PathVariable Long noticeId) {
         String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
-        noticeService.checkNoticeView(loginIdentifier, noticeId);
+        boolean isNewView = noticeService.checkNoticeView(loginIdentifier, noticeId);
 
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_VIEW_CHECK_SUCCESS));
+        if (isNewView) {
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_VIEW_CHECK_SUCCESS));
+        } else {
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_ALREADY_VIEWED));
+        }
     }
 
 

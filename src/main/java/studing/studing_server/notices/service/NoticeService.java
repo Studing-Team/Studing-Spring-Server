@@ -544,7 +544,7 @@ public class NoticeService {
 
 
     @Transactional
-    public void checkNoticeView(String loginIdentifier, Long noticeId) {
+    public boolean checkNoticeView(String loginIdentifier, Long noticeId) {
         // 현재 사용자 조회
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
@@ -561,10 +561,11 @@ public class NoticeService {
         if (!noticeView.isReadAt()) {
             // readAt을 true로 업데이트
             noticeView.setReadAt(true);
-
             // 공지사항의 조회수 증가
             notice.setViewCount(notice.getViewCount() + 1);
+            return true; // 조회수가 증가되었음을 반환
         }
+        return false; // 이미 읽은 상태라 조회수가 증가하지 않았음을 반환
     }
 
 
