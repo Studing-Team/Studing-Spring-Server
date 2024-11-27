@@ -6,11 +6,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import studing.studing_server.common.exception.message.BusinessException;
+import studing.studing_server.common.exception.message.ErrorMessage;
 import studing.studing_server.external.S3Service;
 import studing.studing_server.member.dto.CheckLoginIdRequest;
 import studing.studing_server.member.dto.MemberCreateRequest;
+import studing.studing_server.member.dto.MemberResubmitRequest;
 import studing.studing_server.member.dto.SignUpResponse;
 import studing.studing_server.member.entity.Member;
+import studing.studing_server.member.entity.MemberStatus;
 import studing.studing_server.member.entity.WithdrawnMember;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.member.repository.WithdrawnMemberRepository;
@@ -30,8 +34,6 @@ public class MemberService {
     private final WithdrawnMemberRepository withdrawnMemberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SlackNotificationService slackNotificationService;
-
-
 
 
 
@@ -60,9 +62,6 @@ public class MemberService {
 
         return new SignUpResponse(savedMember.getId());
         }
-
-
-
 
 
     private String uploadStudentCardImage(MultipartFile studentCardImage) {
@@ -120,6 +119,52 @@ public class MemberService {
         // 기존 회원 정보 삭제
         memberRepository.delete(member);
     }
+
+    @Transactional
+    public void resubmitStudentCard(String loginIdentifier, MemberResubmitRequest memberResubmitRequest) {
+        // 현재 로그인한 사용자 조회
+        Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+// ROLE_DENY 체크
+        if (!"ROLE_DENY".equals(member.getRole())) {
+            throw new BusinessException(ErrorMessage.RESUBMIT_NOT_ALLOWED);
+        }
+
+        String imageUrl = uploadStudentCardImage(memberResubmitRequest.studentCardImage());
+
+        try {
+            // 기존 학생증 이미지 삭제
+            if (member.getStudentCardImage() != null) {
+                s3Service.deleteImage(member.getStudentCardImage());
+            }
+
+
+            // 새로운 학생증 이미지 업로드
+            String newImagePath = imageUrl;
+
+            // 회원 정보 업데이트
+            member.setStudentCardImage(newImagePath);
+            member.setName(memberResubmitRequest.name());
+            member.setAdmissionNumber(memberResubmitRequest.admissionNumber());
+            member.setRole(MemberStatus.UNVERIFIED.getRole()); // 미승인 상태로 변경
+
+            memberRepository.save(member);
+
+        } catch (IOException e) {
+            throw new RuntimeException("학생증 이미지 처리 중 오류가 발생했습니다.", e);
+        }
+
+        slackNotificationService.sendMemberResubmissionRequest(member, imageUrl);
+
+
+
+    }
+
+
+
+
+
 
 
 }

@@ -36,20 +36,55 @@ public class SlackNotificationService {
 
     public void sendMemberVerificationRequest(Member member, String imageUrl) {
         try {
-            Payload payload = createMemberVerificationPayload(member, imageUrl);
+            Payload payload = createMemberVerificationPayload(member, imageUrl,false);
             sendSlackNotification(payload);
         } catch (IOException e) {
             log.error("Failed to send Slack notification", e);
         }
     }
 
-    private Payload createMemberVerificationPayload(Member member, String imageUrl) {
+    public void sendMemberResubmissionRequest(Member member, String imageUrl) {
+        try {
+            Payload payload = createMemberVerificationPayload(member, imageUrl, true);
+            sendSlackNotification(payload);
+        } catch (IOException e) {
+            log.error("Failed to send Slack notification for resubmission", e);
+        }
+    }
+
+
+
+//    private Payload createMemberVerificationPayload(Member member, String imageUrl) {
+//        return Payload.builder()
+//                .blocks(Arrays.asList(
+//                        createMemberInfoSection(member),
+//                        createImageBlock(imageUrl),
+//                        createActionButtons(member.getId())
+//                ))
+//                .build();
+//    }
+
+
+    private Payload createMemberVerificationPayload(Member member, String imageUrl, boolean isResubmission) {
         return Payload.builder()
                 .blocks(Arrays.asList(
+                        createHeaderSection(isResubmission),
                         createMemberInfoSection(member),
                         createImageBlock(imageUrl),
                         createActionButtons(member.getId())
                 ))
+                .build();
+    }
+
+    private SectionBlock createHeaderSection(boolean isResubmission) {
+        String headerText = isResubmission
+                ? "*:rotating_light: 학생증 재제출 요청*"
+                : "*:new: 신규 회원가입 요청*";
+
+        return SectionBlock.builder()
+                .text(MarkdownTextObject.builder()
+                        .text(headerText)
+                        .build())
                 .build();
     }
 

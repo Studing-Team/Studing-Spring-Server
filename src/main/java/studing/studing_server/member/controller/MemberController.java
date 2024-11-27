@@ -13,6 +13,7 @@ import studing.studing_server.common.exception.message.BusinessException;
 import studing.studing_server.common.exception.message.ErrorMessage;
 import studing.studing_server.member.dto.CheckLoginIdRequest;
 import studing.studing_server.member.dto.MemberCreateRequest;
+import studing.studing_server.member.dto.MemberResubmitRequest;
 import studing.studing_server.member.dto.SignUpResponse;
 import studing.studing_server.member.service.MemberService;
 
@@ -57,6 +58,21 @@ public class MemberController {
         return ResponseEntity.ok()
                 .body(SuccessStatusResponse.of(SuccessMessage.MEMBER_WITHDRAWAL_SUCCESS));
     }
+
+    @PostMapping("/resubmit")
+    public ResponseEntity<SuccessStatusResponse<Void>> resubmitStudentCard(
+            HttpServletRequest request,
+            @ModelAttribute MemberResubmitRequest resubmitRequest) {
+
+
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        memberService.resubmitStudentCard(loginIdentifier, resubmitRequest);
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(SuccessStatusResponse.of(SuccessMessage.STUDENT_CARD_RESUBMIT_SUCCESS));
+    }
+
+
 
 
 }
