@@ -18,6 +18,7 @@ import studing.studing_server.notices.entity.Notice;
 import studing.studing_server.notices.entity.NoticeLike;
 import studing.studing_server.notices.entity.NoticeView;
 import studing.studing_server.notices.entity.SaveNotice;
+import studing.studing_server.notification.entity.FCMToken;
 
 @Entity
 @Getter
@@ -66,6 +67,9 @@ public class Member extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NoticeView> noticeView;
+
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FCMToken> fcmTokens;
 
 
     @Builder
