@@ -78,6 +78,7 @@ public class SecurityConfig {
                 "/api/v1/member/checkid",
                 "api/v1/member/resubmit",
                 "api/v1/member/withdraw",
+                "api/v1/home/mydata",
                 "/",
         };
     }
