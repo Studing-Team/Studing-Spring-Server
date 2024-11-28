@@ -144,10 +144,14 @@ public class HomeService {
                         unreadCategories.add("총학생회");
                         break;
                     case "ROLE_COLLEGE":
-                        unreadCategories.add(noticeWriter.getMemberCollegeDepartment());
+                        if (currentMember.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment())) {
+                            unreadCategories.add(noticeWriter.getMemberCollegeDepartment());
+                        }
                         break;
                     case "ROLE_DEPARTMENT":
-                        unreadCategories.add(noticeWriter.getMemberDepartment());
+                        if (currentMember.getMemberDepartment().equals(noticeWriter.getMemberDepartment())) {
+                            unreadCategories.add(noticeWriter.getMemberDepartment());
+                        }
                         break;
                 }
             }
