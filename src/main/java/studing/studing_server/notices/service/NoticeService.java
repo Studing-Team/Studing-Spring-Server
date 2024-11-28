@@ -1,6 +1,7 @@
 package studing.studing_server.notices.service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -576,12 +577,16 @@ public class NoticeService {
             throw new BusinessException(ErrorMessage.INVALID_CATEGORY);
         }
 
+
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
-        List<Notice> notices = noticeRepository.findByMember_MemberUniversityOrderByCreatedAtDesc(
-                currentMember.getMemberUniversity()
-        );
+        List<Notice> notices = noticeRepository.findAllByMemberUniversityAndCreatedAtAfter(
+                currentMember.getMemberUniversity(),
+                oneWeekAgo);
+
 
         List<UnreadNoticeResponse> unreadNotices = new ArrayList<>();
 
