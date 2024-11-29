@@ -239,10 +239,16 @@ public class HomeService {
 
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+//
+//        List<Notice> recentNotices = noticeRepository.findTop5ByMember_MemberUniversityOrderByCreatedAtDesc(
+//                currentMember.getMemberUniversity()
+//        );
 
-        List<Notice> recentNotices = noticeRepository.findTop5ByMember_MemberUniversityOrderByCreatedAtDesc(
+        // 해당 대학의 모든 공지사항을 가져옴
+        List<Notice> recentNotices = noticeRepository.findByMember_MemberUniversityOrderByCreatedAtDesc(
                 currentMember.getMemberUniversity()
         );
+
 
         List<NoticeResponse3> filteredNotices = new ArrayList<>();
 
@@ -334,7 +340,15 @@ public class HomeService {
             }
         }
 
-        return new RecentNoticesResponse3(filteredNotices);
+
+        // 필터링된 공지사항 중 최근 5개만 선택
+        List<NoticeResponse3> top5Notices = filteredNotices.stream()
+                .limit(5)
+                .collect(Collectors.toList());
+
+
+
+        return new RecentNoticesResponse3(top5Notices);
     }
 
 
