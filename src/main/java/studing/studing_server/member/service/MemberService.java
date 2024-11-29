@@ -3,6 +3,7 @@ package studing.studing_server.member.service;
 import com.amplitude.Amplitude;
 import com.amplitude.Event;
 import jakarta.annotation.PostConstruct;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
@@ -23,6 +24,10 @@ import studing.studing_server.member.entity.MemberStatus;
 import studing.studing_server.member.entity.WithdrawnMember;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.member.repository.WithdrawnMemberRepository;
+import studing.studing_server.notices.entity.Notice;
+import studing.studing_server.notices.entity.NoticeView;
+import studing.studing_server.notices.repository.NoticeRepository;
+import studing.studing_server.notices.repository.NoticeViewRepository;
 import studing.studing_server.slack.SlackNotificationService;
 import studing.studing_server.universityData.entity.Department;
 import studing.studing_server.universityData.repository.DepartmentRepository;
@@ -40,6 +45,8 @@ public class MemberService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SlackNotificationService slackNotificationService;
     private final Amplitude amplitudeClient;
+    private final NoticeRepository noticeRepository;        // 추가
+    private final NoticeViewRepository noticeViewRepository; // 추가
 
     private static final String S3_BASE_URL = "https://studing-static-files.s3.ap-northeast-2.amazonaws.com/";
 
@@ -69,12 +76,36 @@ public class MemberService {
 
         // 앰플리튜드 이벤트 로깅 추가
         logSignUpEventToAmplitude(savedMember);
+        // 기존 공지사항들에 대한 NoticeView 생성
+        createNoticeViewsForNewMember(savedMember);
 
 
         slackNotificationService.sendMemberVerificationRequest(member, imageUrl);
 
         return new SignUpResponse(savedMember.getId());
         }
+
+
+
+    private void createNoticeViewsForNewMember(Member member) {
+        // 해당 대학교의 모든 공지사항 조회
+        List<Notice> existingNotices = noticeRepository.findByMember_MemberUniversityOrderByCreatedAtDesc(
+                member.getMemberUniversity()
+        );
+
+        // 각 공지사항에 대한 NoticeView 생성
+        for (Notice notice : existingNotices) {
+            NoticeView noticeView = NoticeView.builder()
+                    .notice(notice)
+                    .member(member)
+                    .readAt(false)
+                    .build();
+            noticeViewRepository.save(noticeView);
+        }
+
+        log.info("Created {} NoticeViews for new member with ID: {}",
+                existingNotices.size(), member.getId());
+    }
 
     private void logSignUpEventToAmplitude(Member member) {
         try {
