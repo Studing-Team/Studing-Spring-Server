@@ -40,3 +40,5 @@ out/
 **/application.yml
 
 **studing-a8837-firebase-adminsdk-*.json
+src/main/resources/amplitude.properties
+src/test/resources/amplitude.properties

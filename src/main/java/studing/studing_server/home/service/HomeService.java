@@ -176,17 +176,32 @@ public class HomeService {
         long count = 0;
 
         for (Notice notice : recentNotices) {
-            Optional<NoticeView> noticeView = noticeViewRepository.findByNoticeAndMember(notice, currentMember);
+            Member noticeWriter = notice.getMember();
 
+            //Optional<NoticeView> noticeView = noticeViewRepository.findByNoticeAndMember(notice, currentMember);
+
+            Optional<NoticeView> noticeView = noticeViewRepository.findByMemberIdAndNoticeId(
+                    currentMember.getId(),
+                    notice.getId()
+            );
+
+
+            boolean isUnread = noticeView.map(nv -> !nv.isReadAt()).orElse(true);
+
+            if (!isUnread) {
+                continue;
+            }
+            //
             boolean hasUnread;
+
+
             if (noticeView.isPresent()) {
                 hasUnread = noticeView.get().isReadAt();
             } else {
                 hasUnread = true;
             }
 
-            if (!hasUnread) {
-                Member noticeWriter = notice.getMember();
+           // if (!hasUnread) {
 
                 switch(categorie) {
                     case "전체":
@@ -227,7 +242,7 @@ public class HomeService {
                                 ErrorMessage.INVALID_CATEGORY
                         );
                 }
-            }
+           // }
         }
 
         return new UnreadNoticeCountResponse(count);

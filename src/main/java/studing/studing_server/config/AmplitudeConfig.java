@@ -20,6 +20,7 @@ public class AmplitudeConfig {
     @Bean
     public Amplitude amplitudeClient() {
         Amplitude client = Amplitude.getInstance();
+
         client.init(apiKey);
         return client;
     }

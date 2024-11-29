@@ -23,7 +23,7 @@ public class NoticeImage {
 
     private String  noticeImage;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "notice_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Notice notice;

@@ -109,8 +109,9 @@ public class MemberService {
 
     private void logSignUpEventToAmplitude(Member member) {
         try {
+            System.out.println("Dsf");
             Event amplitudeEvent = new Event("Sign Up", member.getLoginIdentifier());
-
+            System.out.println("Dsf33");
             JSONObject userProps = new JSONObject();
             userProps.put("id", member.getId());
             userProps.put("admission_number", member.getAdmissionNumber());
@@ -124,11 +125,14 @@ public class MemberService {
             userProps.put("role", member.getRole());
             userProps.put("marketing_agreement", member.getMarketingAgreement());
             userProps.put("created_at", member.getCreatedAt());
-
+            System.out.println("Dsf334");
             amplitudeEvent.userProperties = userProps;
             amplitudeClient.logEvent(amplitudeEvent);
-
+            System.out.println("Dsf3355");
         } catch (JSONException e) {
+            System.out.println("D66666");
+            System.out.println(e);
+            System.out.println("D66666");
             log.error("Failed to log Amplitude event", e);
         }
     }
