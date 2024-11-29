@@ -358,24 +358,25 @@ public class HomeService {
         Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
-        // 저장한 공지사항 조회 (최근 5개)
+        // 모든 저장된 공지사항 조회
         List<SaveNotice> savedNotices = saveNoticeRepository
-                .findTop5ByMemberIdOrderByNoticeCreatedAtDesc(currentMember.getId());
+                .findByMemberIdOrderByNoticeCreatedAtDesc(currentMember.getId());
 
 
+        // 저장된 공지사항들을 변환
         List<SavedNoticeResponse> noticeResponses = savedNotices.stream()
                 .map(savedNotice -> {
                     Notice notice = savedNotice.getNotice();
                     Member noticeWriter = notice.getMember();
-                    String affiliation="";
+                    String affiliation = "";
 
                     // 작성자의 권한에 따른 소속 정보 설정
                     if ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())) {
                         affiliation = "총학생회[총학생회]";
                     } else if ("ROLE_COLLEGE".equals(noticeWriter.getRole())) {
-                        affiliation = noticeWriter.getMemberCollegeDepartment()+"[단과대]";
+                        affiliation = noticeWriter.getMemberCollegeDepartment() + "[단과대]";
                     } else if ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())) {
-                        affiliation = noticeWriter.getMemberDepartment()+"[학과]";
+                        affiliation = noticeWriter.getMemberDepartment() + "[학과]";
                     }
 
                     return SavedNoticeResponse.from(
@@ -387,6 +388,8 @@ public class HomeService {
                             true  // 저장된 공지사항 목록이므로 항상 true
                     );
                 })
+                // 최근 5개만 선택
+                .limit(5)
                 .collect(Collectors.toList());
 
         return new SavedNoticesResponse(noticeResponses);
