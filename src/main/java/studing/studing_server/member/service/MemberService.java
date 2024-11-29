@@ -1,7 +1,12 @@
 package studing.studing_server.member.service;
 
+import com.amplitude.Amplitude;
+import com.amplitude.Event;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,8 +39,14 @@ public class MemberService {
     private final WithdrawnMemberRepository withdrawnMemberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SlackNotificationService slackNotificationService;
+    private final Amplitude amplitudeClient;
 
+    private static final String S3_BASE_URL = "https://studing-static-files.s3.ap-northeast-2.amazonaws.com/";
 
+    @PostConstruct
+    public void initAmplitude() {
+        amplitudeClient.init("YOUR_AMPLITUDE_API_KEY");
+    }
 
     @Transactional
     public SignUpResponse signUp(MemberCreateRequest memberCreateRequest) {
@@ -56,6 +67,8 @@ public class MemberService {
 
         Member savedMember = memberRepository.save(member);
 
+        // 앰플리튜드 이벤트 로깅 추가
+        logSignUpEventToAmplitude(savedMember);
 
 
         slackNotificationService.sendMemberVerificationRequest(member, imageUrl);
@@ -63,6 +76,31 @@ public class MemberService {
         return new SignUpResponse(savedMember.getId());
         }
 
+    private void logSignUpEventToAmplitude(Member member) {
+        try {
+            Event amplitudeEvent = new Event("Sign Up", member.getLoginIdentifier());
+
+            JSONObject userProps = new JSONObject();
+            userProps.put("id", member.getId());
+            userProps.put("admission_number", member.getAdmissionNumber());
+            userProps.put("name", member.getName());
+            userProps.put("student_number", member.getStudentNumber());
+            userProps.put("login_identifier", member.getLoginIdentifier());
+            userProps.put("student_card_image", S3_BASE_URL+member.getStudentCardImage());
+            userProps.put("university", member.getMemberUniversity());
+            userProps.put("college_department", member.getMemberCollegeDepartment());
+            userProps.put("department", member.getMemberDepartment());
+            userProps.put("role", member.getRole());
+            userProps.put("marketing_agreement", member.getMarketingAgreement());
+            userProps.put("created_at", member.getCreatedAt());
+
+            amplitudeEvent.userProperties = userProps;
+            amplitudeClient.logEvent(amplitudeEvent);
+
+        } catch (JSONException e) {
+            log.error("Failed to log Amplitude event", e);
+        }
+    }
 
     private String uploadStudentCardImage(MultipartFile studentCardImage) {
         try {

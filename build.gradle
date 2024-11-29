@@ -47,6 +47,10 @@ dependencies {
 	implementation 'com.slack.api:slack-api-model:1.43.0'
 	implementation 'com.slack.api:slack-app-backend:1.43.0'
 
+	// 엠플리튜드
+	implementation 'org.json:json:20201115'
+	implementation 'com.amplitude:java-sdk:1.+'
+
 
 }
 
