@@ -146,7 +146,7 @@ public class MemberService {
             // 회원 정보 업데이트
             member.setStudentCardImage(newImagePath);
             member.setName(memberResubmitRequest.name());
-            member.setAdmissionNumber(memberResubmitRequest.admissionNumber());
+            member.setStudentNumber(memberResubmitRequest.studentNumber());
             member.setRole(MemberStatus.UNVERIFIED.getRole()); // 미승인 상태로 변경
 
             memberRepository.save(member);
