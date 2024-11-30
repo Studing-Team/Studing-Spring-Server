@@ -1,13 +1,10 @@
 package studing.studing_server.member.service;
 
 import com.amplitude.Amplitude;
-import com.amplitude.Event;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,16 +41,13 @@ public class MemberService {
     private final WithdrawnMemberRepository withdrawnMemberRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SlackNotificationService slackNotificationService;
-    private final Amplitude amplitudeClient;
     private final NoticeRepository noticeRepository;        // 추가
     private final NoticeViewRepository noticeViewRepository; // 추가
+    private final AmplitudeService amplitudeService;  // Amplitude 서비스 추가
+
 
     private static final String S3_BASE_URL = "https://studing-static-files.s3.ap-northeast-2.amazonaws.com/";
 
-    @PostConstruct
-    public void initAmplitude() {
-        amplitudeClient.init("YOUR_AMPLITUDE_API_KEY");
-    }
 
     @Transactional
     public SignUpResponse signUp(MemberCreateRequest memberCreateRequest) {
@@ -75,7 +69,8 @@ public class MemberService {
         Member savedMember = memberRepository.save(member);
 
         // 앰플리튜드 이벤트 로깅 추가
-        logSignUpEventToAmplitude(savedMember);
+        amplitudeService.trackSignUp(member);
+
         // 기존 공지사항들에 대한 NoticeView 생성
         createNoticeViewsForNewMember(savedMember);
 
@@ -107,35 +102,7 @@ public class MemberService {
                 existingNotices.size(), member.getId());
     }
 
-    private void logSignUpEventToAmplitude(Member member) {
-        try {
-            System.out.println("Dsf");
-            Event amplitudeEvent = new Event("Sign Up", member.getLoginIdentifier());
-            System.out.println("Dsf33");
-            JSONObject userProps = new JSONObject();
-            userProps.put("id", member.getId());
-            userProps.put("admission_number", member.getAdmissionNumber());
-            userProps.put("name", member.getName());
-            userProps.put("student_number", member.getStudentNumber());
-            userProps.put("login_identifier", member.getLoginIdentifier());
-            userProps.put("student_card_image", S3_BASE_URL+member.getStudentCardImage());
-            userProps.put("university", member.getMemberUniversity());
-            userProps.put("college_department", member.getMemberCollegeDepartment());
-            userProps.put("department", member.getMemberDepartment());
-            userProps.put("role", member.getRole());
-            userProps.put("marketing_agreement", member.getMarketingAgreement());
-            userProps.put("created_at", member.getCreatedAt());
-            System.out.println("Dsf334");
-            amplitudeEvent.userProperties = userProps;
-            amplitudeClient.logEvent(amplitudeEvent);
-            System.out.println("Dsf3355");
-        } catch (JSONException e) {
-            System.out.println("D66666");
-            System.out.println(e);
-            System.out.println("D66666");
-            log.error("Failed to log Amplitude event", e);
-        }
-    }
+
 
     private String uploadStudentCardImage(MultipartFile studentCardImage) {
         try {
