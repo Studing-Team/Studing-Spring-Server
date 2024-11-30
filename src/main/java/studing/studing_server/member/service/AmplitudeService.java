@@ -33,7 +33,7 @@ public class AmplitudeService {
 
 
             // 이벤트 생성
-            Event event = new Event("sign_up", member.getLoginIdentifier());
+            Event event = new Event("click_next_signup_step6_complete", member.getLoginIdentifier());
             event.userProperties = userProps;
 
             // 필수 필드 설정
