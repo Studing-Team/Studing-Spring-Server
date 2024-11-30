@@ -11,11 +11,11 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AmplitudeConfig {
-
+  
     @Value("${amplitude.api-key}")
     private String amplitudeApiKey;
 
-q
+
 
     @Bean
     public Amplitude amplitudeClient() {
