@@ -2,6 +2,7 @@ package studing.studing_server.notices.entity;
 
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -31,6 +32,8 @@ public class Notice extends BaseTimeEntity {
 
 
     private  String title;
+
+    @Column(columnDefinition = "TEXT")
     private String content;
     private  String tag;
     private Long noticeLike = 0L;

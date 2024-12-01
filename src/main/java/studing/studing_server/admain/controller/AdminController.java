@@ -3,13 +3,24 @@ package studing.studing_server.admain.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,6 +43,14 @@ public class AdminController {
     private final MemberVerificationService memberVerificationService;
     private final MemberRepository memberRepository;
     private final RestTemplate restTemplate = new RestTemplate();
+    @Value("${amplitude.api-key}")
+    private String amplitudeApiKey;
+
+    @Value("${amplitude.api-secret}")
+    private String amplitudeApiSecret;
+
+    private static final String AMPLITUDE_API_URL = "https://amplitude.com/api/2/deletions/users";
+
 
     @PostMapping()
     public ResponseEntity<Map<String, String>> handleSlackInteraction(@RequestParam("payload") String payloadStr) {
@@ -119,7 +138,89 @@ public class AdminController {
 
 
 
+    @PostMapping("/delete-amplitude-data/{amplitudeId}")
+    public ResponseEntity<?> deleteAmplitudeData(@PathVariable String amplitudeId) {
+        try {
+            HttpHeaders headers = createAmplitudeHeaders();
 
+            Map<String, Object> requestBody = new HashMap<>();
+            // amplitude_ids를 Long 배열로 전송
+            requestBody.put("amplitude_ids", List.of(Long.parseLong(amplitudeId)));
+            requestBody.put("requester", "Admin Deletion Request");
+            requestBody.put("ignore_invalid_id", "True");     // boolean이 아닌 String으로 변경
+            requestBody.put("delete_from_org", "True");       // boolean이 아닌 String으로 변경
+
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+
+            ResponseEntity<String> amplitudeResponse = restTemplate.exchange(
+                    "https://amplitude.com/api/2/deletions/users",  // 정확한 엔드포인트 URL
+                    HttpMethod.POST,
+                    request,
+                    String.class
+            );
+
+            if (amplitudeResponse.getStatusCode() == HttpStatus.OK) {
+                log.info("Successfully requested Amplitude data deletion for amplitude ID: {}", amplitudeId);
+                return ResponseEntity.ok()
+                        .body(Map.of(
+                                "message", "데이터 삭제 요청이 성공적으로 처리되었습니다. 삭제는 30일 이내에 완료됩니다.",
+                                "amplitudeId", amplitudeId,
+                                "response", amplitudeResponse.getBody()
+                        ));
+            } else {
+                log.error("Failed to delete Amplitude data for amplitude ID: {}", amplitudeId);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "데이터 삭제 요청에 실패했습니다."));
+            }
+
+        } catch (Exception e) {
+            log.error("Error deleting Amplitude data for amplitude ID: {}", amplitudeId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "데이터 삭제 중 오류가 발생했습니다: " + e.getMessage()));
+        }
+    }
+
+
+    @GetMapping("/amplitude-deletion-status")
+    public ResponseEntity<?> checkDeletionStatus(
+            @RequestParam String startDay,  // YYYY-MM-DD 형식
+            @RequestParam String endDay) {  // YYYY-MM-DD 형식
+
+        try {
+            HttpHeaders headers = createAmplitudeHeaders();
+            headers.set("Accept", "application/json");  // Accept 헤더 추가
+            HttpEntity<String> request = new HttpEntity<>(headers);
+
+            String url = "https://amplitude.com/api/2/deletions/users" +
+                    "?start_day=" + startDay +
+                    "&end_day=" + endDay;
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    request,
+                    String.class
+            );
+
+            return ResponseEntity.ok(response.getBody());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "삭제 상태 확인 중 오류가 발생했습니다: " + e.getMessage()));
+        }
+    }
+
+    private HttpHeaders createAmplitudeHeaders() {
+        String credentials = amplitudeApiKey + ":" + amplitudeApiSecret;
+        String encodedCredentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", "application/json");
+        headers.set("Content-Type", "application/json");
+        headers.set("Authorization", "Basic " + encodedCredentials);
+        return headers;
+    }
 
 
 
