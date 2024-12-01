@@ -9,17 +9,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import studing.studing_server.common.dto.SuccessMessage;
-import studing.studing_server.common.dto.SuccessStatusResponse;
+
+import org.springframework.web.client.RestTemplate;
 import studing.studing_server.member.entity.Member;
 import studing.studing_server.member.repository.MemberRepository;
 import studing.studing_server.member.service.MemberVerificationService;
+
+import java.util.Base64;
+import java.util.Collections;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -28,6 +31,8 @@ public class AdminController {
 
     private final MemberVerificationService memberVerificationService;
     private final MemberRepository memberRepository;
+    private final RestTemplate restTemplate = new RestTemplate();
+
     @PostMapping()
     public ResponseEntity<Map<String, String>> handleSlackInteraction(@RequestParam("payload") String payloadStr) {
         try {
@@ -111,6 +116,16 @@ public class AdminController {
             default -> role;
         };
     }
+
+
+
+
+
+
+
+
+
+
 
 
 }

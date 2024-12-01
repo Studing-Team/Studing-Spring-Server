@@ -43,7 +43,6 @@ public class MemberService {
     private final SlackNotificationService slackNotificationService;
     private final NoticeRepository noticeRepository;        // 추가
     private final NoticeViewRepository noticeViewRepository; // 추가
-    private final AmplitudeService amplitudeService;  // Amplitude 서비스 추가
 
 
     private static final String S3_BASE_URL = "https://studing-static-files.s3.ap-northeast-2.amazonaws.com/";
@@ -68,8 +67,7 @@ public class MemberService {
 
         Member savedMember = memberRepository.save(member);
 
-        // 앰플리튜드 이벤트 로깅 추가
-        amplitudeService.trackSignUp(member);
+
 
         // 기존 공지사항들에 대한 NoticeView 생성
         createNoticeViewsForNewMember(savedMember);

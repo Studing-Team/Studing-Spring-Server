@@ -17,6 +17,8 @@ public class MemberVerificationService {
 
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
+    private final AmplitudeService amplitudeService;  // Amplitude 서비스 추가
+
 
     public void verifyMember(Long memberId, String role) {
         Member member = memberRepository.findById(memberId)
@@ -26,10 +28,22 @@ public class MemberVerificationService {
         memberRepository.save(member);
 
         switch (role) {
-            case "ROLE_USER" -> sendVerificationNotification(member, NotificationType.USER);
-            case "ROLE_UNIVERSITY" -> sendVerificationNotification(member, NotificationType.UNIVERSITY);
-            case "ROLE_COLLEGE" -> sendVerificationNotification(member, NotificationType.COLLEGE);
-            case "ROLE_DEPARTMENT" -> sendVerificationNotification(member, NotificationType.DEPARTMENT);
+            case "ROLE_USER" -> {
+                amplitudeService.trackSignUp(member);
+                sendVerificationNotification(member, NotificationType.USER);
+            }
+            case "ROLE_UNIVERSITY" -> {
+                amplitudeService.trackSignUp(member);
+                sendVerificationNotification(member, NotificationType.UNIVERSITY);
+            }
+            case "ROLE_COLLEGE" -> {
+                amplitudeService.trackSignUp(member);
+                sendVerificationNotification(member, NotificationType.COLLEGE);
+            }
+            case "ROLE_DEPARTMENT" -> {
+                amplitudeService.trackSignUp(member);
+                sendVerificationNotification(member, NotificationType.DEPARTMENT);
+            }
             case "ROLE_DENY" -> sendVerificationNotification(member, NotificationType.DENIED);
         }
     }
@@ -51,6 +65,10 @@ public class MemberVerificationService {
     }
 
     private void sendVerificationNotification(Member member, NotificationType type) {
+
+
+
+
         String body = String.format(type.messageFormat, member.getName());
         log.info("Sending verification notification - MemberId: {}, MemberName: {}, NotificationType: {}, Title: {}, Body: {}",
                 member.getId(),
