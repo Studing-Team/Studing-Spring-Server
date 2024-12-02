@@ -103,7 +103,7 @@ public class MemberService {
                         .build())
                 .toList();
 
-        // 배치 저장으로 쿼리 수 최소화
+        // 배치 저장으로 쿼리 수 최소화.
         noticeViewRepository.saveAll(noticeViews);
 
         log.info("Created {} NoticeViews for new member with ID: {}",
