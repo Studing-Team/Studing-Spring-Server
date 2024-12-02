@@ -114,15 +114,44 @@ public class NoticeService {
     }
 
     private void createNoticeViews(Notice notice, String universityName) {
-        List<Member> universityMembers = memberRepository.findByMemberUniversity(universityName);
-        for (Member universityMember : universityMembers) {
-            NoticeView noticeView = NoticeView.builder()
-                    .notice(notice)
-                    .member(universityMember)
-                    .readAt(false)
-                    .build();
-            noticeViewRepository.save(noticeView);
+        Member noticeWriter = notice.getMember();
+        List<Member> targetMembers;
+
+        switch (noticeWriter.getRole()) {
+            case "ROLE_UNIVERSITY" -> {
+                // 같은 대학교 학생들에게만 NoticeView 생성
+                targetMembers = memberRepository.findByMemberUniversity(universityName);
+            }
+            case "ROLE_COLLEGE" -> {
+                // 같은 단과대 학생들에게만 NoticeView 생성
+                targetMembers = memberRepository.findByMemberUniversityAndMemberCollegeDepartment(
+                        universityName,
+                        noticeWriter.getMemberCollegeDepartment()
+                );
+            }
+            case "ROLE_DEPARTMENT" -> {
+                // 같은 학과 학생들에게만 NoticeView 생성
+                targetMembers = memberRepository.findByMemberUniversityAndMemberDepartment(
+                        universityName,
+                        noticeWriter.getMemberDepartment()
+                );
+            }
+            default -> {
+                targetMembers = List.of(); // 기타 권한의 경우 빈 리스트
+                log.warn("Unexpected role for notice writer: {}", noticeWriter.getRole());
+            }
         }
+
+        // 배치 저장으로 쿼리 수 최소화
+        List<NoticeView> noticeViews = targetMembers.stream()
+                .map(member -> NoticeView.builder()
+                        .notice(notice)
+                        .member(member)
+                        .readAt(false)
+                        .build())
+                .toList();
+
+        noticeViewRepository.saveAll(noticeViews);
     }
 
 

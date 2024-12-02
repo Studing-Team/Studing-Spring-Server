@@ -78,27 +78,57 @@ public class MemberService {
         return new SignUpResponse(savedMember.getId());
         }
 
-
-
     private void createNoticeViewsForNewMember(Member member) {
-        // 해당 대학교의 모든 공지사항 조회
-        List<Notice> existingNotices = noticeRepository.findByMember_MemberUniversityOrderByCreatedAtDesc(
-                member.getMemberUniversity()
-        );
+        // 해당 대학교의 조건에 맞는 공지사항들만 조회
+        List<Notice> relevantNotices = noticeRepository.findByMember_MemberUniversityOrderByCreatedAtDesc(
+                        member.getMemberUniversity()
+                ).stream()
+                .filter(notice -> {
+                    Member noticeWriter = notice.getMember();
+                    return ("ROLE_UNIVERSITY".equals(noticeWriter.getRole())
+                            && member.getMemberUniversity().equals(noticeWriter.getMemberUniversity()))
+                            || ("ROLE_COLLEGE".equals(noticeWriter.getRole())
+                            && member.getMemberCollegeDepartment().equals(noticeWriter.getMemberCollegeDepartment()))
+                            || ("ROLE_DEPARTMENT".equals(noticeWriter.getRole())
+                            && member.getMemberDepartment().equals(noticeWriter.getMemberDepartment()));
+                })
+                .toList();
 
-        // 각 공지사항에 대한 NoticeView 생성
-        for (Notice notice : existingNotices) {
-            NoticeView noticeView = NoticeView.builder()
-                    .notice(notice)
-                    .member(member)
-                    .readAt(false)
-                    .build();
-            noticeViewRepository.save(noticeView);
-        }
+        // 필터링된 공지사항들에 대해서만 NoticeView 생성
+        List<NoticeView> noticeViews = relevantNotices.stream()
+                .map(notice -> NoticeView.builder()
+                        .notice(notice)
+                        .member(member)
+                        .readAt(false)
+                        .build())
+                .toList();
+
+        // 배치 저장으로 쿼리 수 최소화
+        noticeViewRepository.saveAll(noticeViews);
 
         log.info("Created {} NoticeViews for new member with ID: {}",
-                existingNotices.size(), member.getId());
+                noticeViews.size(), member.getId());
     }
+
+//    private void createNoticeViewsForNewMember(Member member) {
+//        // 해당 대학교의 모든 공지사항 조회
+//        List<Notice> existingNotices = noticeRepository.findByMember_MemberUniversityOrderByCreatedAtDesc(
+//                member.getMemberUniversity()
+//        );
+//
+//        // 각 공지사항에 대한 NoticeView 생성
+//        for (Notice notice : existingNotices) {
+//            NoticeView noticeView = NoticeView.builder()
+//                    .notice(notice)
+//                    .member(member)
+//                    .readAt(false)
+//                    .build();
+//            noticeViewRepository.save(noticeView);
+//        }
+//
+//        log.info("Created {} NoticeViews for new member with ID: {}",
+//                existingNotices.size(), member.getId());
+//    }
 
 
 

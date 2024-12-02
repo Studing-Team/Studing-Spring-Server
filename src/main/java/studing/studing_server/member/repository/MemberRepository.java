@@ -16,4 +16,18 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             String memberDepartment,
             String role
     );
+
+
+
+
+    List<Member> findByMemberUniversityAndMemberCollegeDepartment(
+            String memberUniversity,
+            String memberCollegeDepartment
+    );
+
+    List<Member> findByMemberUniversityAndMemberDepartment(
+            String memberUniversity,
+            String memberDepartment
+    );
+
 }
