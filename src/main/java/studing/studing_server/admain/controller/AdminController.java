@@ -94,12 +94,7 @@ public class AdminController {
             }else if ("department_member".equals(actionId)) {
                 memberVerificationService.verifyMember(Long.parseLong(memberId), "ROLE_DEPARTMENT");
             }
-
-
-
-
-
-
+            
             Map<String, String> response = new HashMap<>();
             response.put("actionId", actionId);
             response.put("memberId", memberId);

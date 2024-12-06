@@ -38,6 +38,7 @@ import studing.studing_server.notices.repository.NoticeLikeRepository;
 import studing.studing_server.notices.repository.NoticeRepository;
 import studing.studing_server.notices.repository.NoticeViewRepository;
 import studing.studing_server.notices.repository.SaveNoticeRepository;
+import studing.studing_server.notification.service.NotificationService;
 import studing.studing_server.universityData.entity.CollegeDepartment;
 import studing.studing_server.universityData.entity.Department;
 import studing.studing_server.universityData.entity.University;
@@ -60,6 +61,7 @@ public class NoticeService {
     private  final CollegeDepartmentRepository collegeDepartmentRepository;
     private final DepartmentRepository departmentRepository;
     private final UniversityDataRepository universityDataRepository;
+    private final NotificationService notificationService;
 
     private final S3Service s3Service;
 
@@ -69,15 +71,50 @@ public class NoticeService {
 
         Notice notice = saveNotice(noticeCreateRequest, member);
         saveNoticeImages(noticeCreateRequest, notice);
-        createNoticeViews(notice, member.getMemberUniversity());
+
+        // NoticeView 생성 및 알림 발송을 위한 대상 멤버 조회
+        List<Member> targetMembers = getTargetMembers(member);
+
+        // NoticeView 생성
+        createNoticeViews(notice, targetMembers);
+
+        // 알림 발송
+        sendNotifications(member, targetMembers);
+
     }
+
+
+    private List<Member> getTargetMembers(Member noticeWriter) {
+        switch (noticeWriter.getRole()) {
+            case "ROLE_UNIVERSITY" -> {
+                return memberRepository.findByMemberUniversity(noticeWriter.getMemberUniversity());
+            }
+            case "ROLE_COLLEGE" -> {
+                return memberRepository.findByMemberUniversityAndMemberCollegeDepartment(
+                        noticeWriter.getMemberUniversity(),
+                        noticeWriter.getMemberCollegeDepartment()
+                );
+            }
+            case "ROLE_DEPARTMENT" -> {
+                return memberRepository.findByMemberUniversityAndMemberDepartment(
+                        noticeWriter.getMemberUniversity(),
+                        noticeWriter.getMemberDepartment()
+                );
+            }
+            default -> {
+                log.warn("Unexpected role for notice writer: {}", noticeWriter.getRole());
+                return List.of();
+            }
+        }
+    }
+
+
 
     private Member getAuthenticatedMember() {
 
         return memberRepository.findByLoginIdentifier(SecurityContextHolder.getContext().getAuthentication().getName())
                 .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
     }
-
 
     private Notice saveNotice(NoticeCreateRequest request, Member member) {
         Notice notice = Notice.builder()
@@ -89,7 +126,6 @@ public class NoticeService {
         noticeRepository.save(notice);
         return notice;
     }
-
 
     private void saveNoticeImages(NoticeCreateRequest request, Notice notice) {
         if (request.noticeImages() != null) {
@@ -113,36 +149,9 @@ public class NoticeService {
         }
     }
 
-    private void createNoticeViews(Notice notice, String universityName) {
-        Member noticeWriter = notice.getMember();
-        List<Member> targetMembers;
 
-        switch (noticeWriter.getRole()) {
-            case "ROLE_UNIVERSITY" -> {
-                // 같은 대학교 학생들에게만 NoticeView 생성
-                targetMembers = memberRepository.findByMemberUniversity(universityName);
-            }
-            case "ROLE_COLLEGE" -> {
-                // 같은 단과대 학생들에게만 NoticeView 생성
-                targetMembers = memberRepository.findByMemberUniversityAndMemberCollegeDepartment(
-                        universityName,
-                        noticeWriter.getMemberCollegeDepartment()
-                );
-            }
-            case "ROLE_DEPARTMENT" -> {
-                // 같은 학과 학생들에게만 NoticeView 생성
-                targetMembers = memberRepository.findByMemberUniversityAndMemberDepartment(
-                        universityName,
-                        noticeWriter.getMemberDepartment()
-                );
-            }
-            default -> {
-                targetMembers = List.of(); // 기타 권한의 경우 빈 리스트
-                log.warn("Unexpected role for notice writer: {}", noticeWriter.getRole());
-            }
-        }
 
-        // 배치 저장으로 쿼리 수 최소화
+    private void createNoticeViews(Notice notice, List<Member> targetMembers) {
         List<NoticeView> noticeViews = targetMembers.stream()
                 .map(member -> NoticeView.builder()
                         .notice(notice)
@@ -154,7 +163,28 @@ public class NoticeService {
         noticeViewRepository.saveAll(noticeViews);
     }
 
+    private void sendNotifications(Member writer, List<Member> targetMembers) {
+        String title = "새로운 공지사항";
+        String body = switch (writer.getRole()) {
+            case "ROLE_UNIVERSITY" -> "총학생회 공지가 작성되었습니다";
+            case "ROLE_COLLEGE" -> writer.getMemberCollegeDepartment() + " 학생회 공지가 작성되었습니다";
+            case "ROLE_DEPARTMENT" -> writer.getMemberDepartment() + " 학생회 공지가 작성되었습니다";
+            default -> throw new IllegalArgumentException("Invalid role: " + writer.getRole());
+        };
 
+        for (Member targetMember : targetMembers) {
+            try {
+                notificationService.sendNotificationToMember(
+                        targetMember.getId(),
+                        title,
+                        body
+                );
+            } catch (Exception e) {
+                log.error("Failed to send notification to member {}: {}",
+                        targetMember.getId(), e.getMessage());
+            }
+        }
+    }
 
 
     @Transactional(readOnly = true)
