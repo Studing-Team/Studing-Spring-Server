@@ -34,18 +34,22 @@ public class SlackNotificationService {
 
     private final Slack slack = Slack.getInstance();
 
-    public void sendMemberVerificationRequest(Member member, String imageUrl) {
+
+
+    public void sendMemberVerificationRequest(Member member, String imageUrl, Long memberCount) {
         try {
-            Payload payload = createMemberVerificationPayload(member, imageUrl,false);
+            Payload payload = createMemberVerificationPayload(member, imageUrl, false, memberCount);
             sendSlackNotification(payload);
         } catch (IOException e) {
             log.error("Failed to send Slack notification", e);
         }
     }
 
+
+
     public void sendMemberResubmissionRequest(Member member, String imageUrl) {
         try {
-            Payload payload = createMemberVerificationPayload(member, imageUrl, true);
+            Payload payload = createMemberVerificationPayload(member, imageUrl, true,0L);
             sendSlackNotification(payload);
         } catch (IOException e) {
             log.error("Failed to send Slack notification for resubmission", e);
@@ -53,22 +57,10 @@ public class SlackNotificationService {
     }
 
 
-
-//    private Payload createMemberVerificationPayload(Member member, String imageUrl) {
-//        return Payload.builder()
-//                .blocks(Arrays.asList(
-//                        createMemberInfoSection(member),
-//                        createImageBlock(imageUrl),
-//                        createActionButtons(member.getId())
-//                ))
-//                .build();
-//    }
-
-
-    private Payload createMemberVerificationPayload(Member member, String imageUrl, boolean isResubmission) {
+    private Payload createMemberVerificationPayload(Member member, String imageUrl, boolean isResubmission, Long memberCount) {
         return Payload.builder()
                 .blocks(Arrays.asList(
-                        createHeaderSection(isResubmission),
+                        createHeaderSection(isResubmission, memberCount),
                         createMemberInfoSection(member),
                         createImageBlock(imageUrl),
                         createActionButtons(member.getId())
@@ -76,10 +68,10 @@ public class SlackNotificationService {
                 .build();
     }
 
-    private SectionBlock createHeaderSection(boolean isResubmission) {
+    private SectionBlock createHeaderSection(boolean isResubmission, Long memberCount) {
         String headerText = isResubmission
                 ? "*:rotating_light: 학생증 재제출 요청*"
-                : "*:new: 신규 회원가입 요청*";
+                : String.format("*:new: 신규 회원가입 요청*\n*%d번째 사용자가 회원가입 하였습니다!*", memberCount);
 
         return SectionBlock.builder()
                 .text(MarkdownTextObject.builder()
@@ -87,6 +79,8 @@ public class SlackNotificationService {
                         .build())
                 .build();
     }
+
+
 
     private SectionBlock createMemberInfoSection(Member member) {
         MemberInfoDto info = MemberInfoDto.from(member);

@@ -71,9 +71,10 @@ public class MemberService {
 
         // 기존 공지사항들에 대한 NoticeView 생성
         createNoticeViewsForNewMember(savedMember);
+        // 현재 총 회원 수 조회
+        long totalMemberCount = memberRepository.count();
 
-
-        slackNotificationService.sendMemberVerificationRequest(member, imageUrl);
+        slackNotificationService.sendMemberVerificationRequest(member, imageUrl,totalMemberCount);
 
         return new SignUpResponse(savedMember.getId());
         }
@@ -110,25 +111,7 @@ public class MemberService {
                 noticeViews.size(), member.getId());
     }
 
-//    private void createNoticeViewsForNewMember(Member member) {
-//        // 해당 대학교의 모든 공지사항 조회
-//        List<Notice> existingNotices = noticeRepository.findByMember_MemberUniversityOrderByCreatedAtDesc(
-//                member.getMemberUniversity()
-//        );
-//
-//        // 각 공지사항에 대한 NoticeView 생성
-//        for (Notice notice : existingNotices) {
-//            NoticeView noticeView = NoticeView.builder()
-//                    .notice(notice)
-//                    .member(member)
-//                    .readAt(false)
-//                    .build();
-//            noticeViewRepository.save(noticeView);
-//        }
-//
-//        log.info("Created {} NoticeViews for new member with ID: {}",
-//                existingNotices.size(), member.getId());
-//    }
+
 
 
 
