@@ -1,5 +1,7 @@
 package studing.studing_server.member.service;
 
+import java.util.HashMap;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -70,6 +72,11 @@ public class MemberVerificationService {
 
 
         String body = String.format(type.messageFormat, member.getName());
+        // 알림 데이터 맵 생성
+        Map<String, String> data = new HashMap<>();
+        data.put("type", "VERIFICATION");  // 알림 타입을 구분하기 위한 값
+
+
         log.info("Sending verification notification - MemberId: {}, MemberName: {}, NotificationType: {}, Title: {}, Body: {}",
                 member.getId(),
                 member.getName(),
@@ -82,7 +89,8 @@ public class MemberVerificationService {
             notificationService.sendNotificationToMember(
                     member.getId(),
                     type.title,
-                    body
+                    body,
+                    data
             );
         } catch (Exception e) {
             log.error("Failed to send notification", e);

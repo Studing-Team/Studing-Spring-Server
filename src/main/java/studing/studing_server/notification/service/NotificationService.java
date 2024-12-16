@@ -6,6 +6,7 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import java.io.IOException;
 
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,7 +36,7 @@ public class NotificationService {
         fcmTokenRepository.save(fcmToken);
     }
 
-    public void sendNotificationToMember(Long memberId, String title, String body){
+    public void sendNotificationToMember(Long memberId, String title, String body, Map<String, String> data){
 
         String token = fcmTokenRepository.findValidTokenByMemberId(memberId)
                 .orElseThrow(() -> new RuntimeException("No valid token found for member: " + memberId));
@@ -47,18 +48,22 @@ public class NotificationService {
         Message message = Message.builder()
                 .setToken(token) // 조회한 토큰 값을 사용
                 .setNotification(notification)
+                .putAllData(data)  // 추가 데이터 포함
                 .build();
 
         try {
             // 메시지 전송
             System.out.println("ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ " );
+            data.forEach((key, value) -> System.out.println(key + ": " + value));
+
             String response= firebaseMessaging.send(message);
-           // String response = FirebaseMessaging.getInstance().send(message);
+            log.info("Message sent successfully: {}", response);
             System.out.println("Message sent successfully: " + response);
 
         } catch (FirebaseMessagingException e) {
-            e.printStackTrace();
             System.out.println("Failed to send message");
+            e.printStackTrace();
+
         }
 
 

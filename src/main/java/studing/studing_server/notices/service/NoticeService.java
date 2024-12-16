@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +81,7 @@ public class NoticeService {
         createNoticeViews(notice, targetMembers);
 
         // 알림 발송
-        sendNotifications(member, targetMembers);
+        sendNotifications(member,noticeCreateRequest.title(), targetMembers, notice.getId());
 
     }
 
@@ -163,21 +165,25 @@ public class NoticeService {
         noticeViewRepository.saveAll(noticeViews);
     }
 
-    private void sendNotifications(Member writer, List<Member> targetMembers) {
-        String title = "새로운 공지사항";
-        String body = switch (writer.getRole()) {
-            case "ROLE_UNIVERSITY" -> "총학생회 공지가 작성되었습니다";
-            case "ROLE_COLLEGE" -> writer.getMemberCollegeDepartment() + " 학생회 공지가 작성되었습니다";
-            case "ROLE_DEPARTMENT" -> writer.getMemberDepartment() + " 학생회 공지가 작성되었습니다";
+    private void sendNotifications(Member writer,String noticeTitle, List<Member> targetMembers,Long noticeId) {
+//        String title = "새로운 공지사항";
+        String title = switch (writer.getRole()) {
+            case "ROLE_UNIVERSITY" -> "총학생회의 새로운 공지를 확인하세요.";
+            case "ROLE_COLLEGE" -> writer.getMemberCollegeDepartment() + "의 새로운 공지를 확인하세요.";
+            case "ROLE_DEPARTMENT" -> writer.getMemberDepartment() + "의 새로운 공지를 확인하세요.";
             default -> throw new IllegalArgumentException("Invalid role: " + writer.getRole());
         };
 
+        Map<String, String> data = new HashMap<>();
+        data.put("noticeId", noticeId.toString());
+        data.put("type", "NOTICE");
         for (Member targetMember : targetMembers) {
             try {
                 notificationService.sendNotificationToMember(
                         targetMember.getId(),
                         title,
-                        body
+                        noticeTitle,
+                        data
                 );
             } catch (Exception e) {
                 log.error("Failed to send notification to member {}: {}",
