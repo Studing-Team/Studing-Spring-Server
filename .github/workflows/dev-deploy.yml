@@ -25,16 +25,12 @@ jobs:
         run: |
           echo '${{ secrets.FIREBASE_ADMIN_SDK }}' > ./src/main/resources/studing-a8837-firebase-adminsdk-wl5fu-e2415a1c7f.json
 
+
       - name: 테스트 및 빌드하기
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            ./gradlew clean build -Pprofile=prod
-          elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-            ./gradlew clean build -Pprofile=dev
-          fi
+        run: ./gradlew clean build
 
       - name: 빌드된 파일 이름 변경하기
-        run: mv ./build/libs/*SNAPSHOT.jar ./project-${{ github.ref_name }}.jar
+        run: mv ./build/libs/*SNAPSHOT.jar ./project.jar
 
       - name: SCP로 EC2에 빌드된 파일 전송하기
         uses: appleboy/scp-action@v0.1.7
@@ -42,24 +38,21 @@ jobs:
           host: ${{ secrets.DEV_EC2_HOST }}
           username: ${{ secrets.DEV_EC2_USERNAME }}
           key: ${{ secrets.DEV_EC2_PRIVATE_KEY }}
-          source: project-${{ github.ref_name }}.jar
+          source: project.jar
           target: /home/ubuntu/studing-spring-server/tobe
 
       - name: SSH로 EC2에 접속하기
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.DEV_EC2_USERNAME }}
+          host: ${{ secrets.DEV_EC2_HOST }}
           username: ${{ secrets.DEV_EC2_USERNAME }}
           key: ${{ secrets.DEV_EC2_PRIVATE_KEY }}
           script_stop: true
           script: |
-            cd /home/ubuntu/studing-spring-server/tobe
-            mv project-${{ github.ref_name }}.jar /home/ubuntu/studing-spring-server/current/project-${{ github.ref_name }}.jar
+            rm -rf /home/ubuntu/studing-spring-server/current
+            mkdir /home/ubuntu/studing-spring-server/current
+            mv /home/ubuntu/studing-spring-server/tobe/project.jar /home/ubuntu/studing-spring-server/current/project.jar
             cd /home/ubuntu/studing-spring-server/current
-            if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-              sudo fuser -k -n tcp 8080 || true
-              nohup java -jar -Dspring.profiles.active=prod project-main.jar > ./prod_output.log 2>&1 &
-            elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-              sudo fuser -k -n tcp 8081 || true
-              nohup java -jar -Dspring.profiles.active=dev project-dev.jar > ./dev_output.log 2>&1 &
-            fi
+            sudo fuser -k -n tcp 8080 || true
+            nohup java -jar project.jar > ./output.log 2>&1 & 
+            rm -rf /home/ubuntu/studing-spring-server/tobe
