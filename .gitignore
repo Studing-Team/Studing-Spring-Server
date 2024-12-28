@@ -38,6 +38,7 @@ out/
 
 **/.DS_Store
 **/application.yml
+**/dev-application.yml
 
 **studing-a8837-firebase-adminsdk-*.json
 src/main/resources/amplitude.properties

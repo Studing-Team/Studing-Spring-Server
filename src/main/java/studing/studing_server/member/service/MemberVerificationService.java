@@ -1,9 +1,11 @@
 package studing.studing_server.member.service;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import studing.studing_server.member.entity.Member;
@@ -20,7 +22,12 @@ public class MemberVerificationService {
     private final MemberRepository memberRepository;
     private final NotificationService notificationService;
     private final AmplitudeService amplitudeService;  // Amplitude 서비스 추가
+    @Value("${spring.datasource.url}")
+    private String databaseUrl;
 
+    private boolean isDevEnvironment() {
+        return databaseUrl.endsWith("devstudingdb");
+    }
 
     public void verifyMember(Long memberId, String role) {
         Member member = memberRepository.findById(memberId)
@@ -29,26 +36,34 @@ public class MemberVerificationService {
         member.setRole(role);
         memberRepository.save(member);
 
-        switch (role) {
-            case "ROLE_USER" -> {
+        // Amplitude 추적이 필요한 역할 확인
+        boolean needsAmplitudeTracking = Arrays.asList(
+                "ROLE_USER", "ROLE_UNIVERSITY", "ROLE_COLLEGE", "ROLE_DEPARTMENT"
+        ).contains(role);
+
+        // devstudingdb가 아닐 때만 Amplitude 추적 실행
+        if (needsAmplitudeTracking) {
+            if (!isDevEnvironment()) {
                 amplitudeService.trackSignUp(member);
-                sendVerificationNotification(member, NotificationType.USER);
+            } else {
+                log.info("Amplitude tracking skipped in dev environment for member: {}",
+                        member.getId());
             }
-            case "ROLE_UNIVERSITY" -> {
-                amplitudeService.trackSignUp(member);
-                sendVerificationNotification(member, NotificationType.UNIVERSITY);
-            }
-            case "ROLE_COLLEGE" -> {
-                amplitudeService.trackSignUp(member);
-                sendVerificationNotification(member, NotificationType.COLLEGE);
-            }
-            case "ROLE_DEPARTMENT" -> {
-                amplitudeService.trackSignUp(member);
-                sendVerificationNotification(member, NotificationType.DEPARTMENT);
-            }
-            case "ROLE_DENY" -> sendVerificationNotification(member, NotificationType.DENIED);
         }
+
+        // NotificationType 매핑
+        NotificationType notificationType = switch (role) {
+            case "ROLE_USER" -> NotificationType.USER;
+            case "ROLE_UNIVERSITY" -> NotificationType.UNIVERSITY;
+            case "ROLE_COLLEGE" -> NotificationType.COLLEGE;
+            case "ROLE_DEPARTMENT" -> NotificationType.DEPARTMENT;
+            case "ROLE_DENY" -> NotificationType.DENIED;
+            default -> throw new IllegalArgumentException("Invalid role: " + role);
+        };
+
+        sendVerificationNotification(member, notificationType);
     }
+
 
     private enum NotificationType {
         USER("학교 인증 완료", "%s님의 학교 인증이 완료되었습니다. 이제 Studing의 모든 서비스를 이용하실 수 있습니다."),
