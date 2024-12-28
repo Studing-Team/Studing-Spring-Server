@@ -12,6 +12,8 @@ import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.common.exception.message.BusinessException;
 import studing.studing_server.common.exception.message.ErrorMessage;
 import studing.studing_server.member.dto.CheckLoginIdRequest;
+import studing.studing_server.member.dto.FindPasswordRequest;
+import studing.studing_server.member.dto.FindPasswordResponse;
 import studing.studing_server.member.dto.MemberCreateRequest;
 import studing.studing_server.member.dto.MemberResubmitRequest;
 import studing.studing_server.member.dto.SignUpResponse;
@@ -72,6 +74,15 @@ public class MemberController {
                 .body(SuccessStatusResponse.of(SuccessMessage.STUDENT_CARD_RESUBMIT_SUCCESS));
     }
 
+
+
+    @PostMapping("/find-password")
+    public ResponseEntity<SuccessStatusResponse<FindPasswordResponse>> findPassword(
+            @RequestBody FindPasswordRequest request) {
+        FindPasswordResponse response = memberService.findPassword(request.loginIdentifier());
+        return ResponseEntity.ok()
+                .body(SuccessStatusResponse.of(SuccessMessage.PASSWORD_RESET_SUCCESS, response));
+    }
 
 
 

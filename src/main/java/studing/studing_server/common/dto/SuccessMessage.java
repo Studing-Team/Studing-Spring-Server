@@ -20,6 +20,8 @@ public enum SuccessMessage {
     MEMBER_WITHDRAWAL_SUCCESS(HttpStatus.OK.value(), "회원 탈퇴가 완료되었습니다."),
     NOTICE_ALREADY_VIEWED(HttpStatus.OK.value(), "이미 조회한 공지사항입니다."),
     NOTICE_VIEW_CHECK_SUCCESS(HttpStatus.CREATED.value(), "공지사항 조회 체크에 성공하였습니다."),
+    // SuccessMessage.java에 추가
+    PASSWORD_RESET_SUCCESS(HttpStatus.OK.value(), "임시 비밀번호가 발급되었습니다."),
     // SuccessMessage에 추가
     NOTICE_SAVE_CANCEL_SUCCESS(HttpStatus.OK.value(), "공지사항 저장 취소에 성공하였습니다."),
     // SuccessMessage에 추가
