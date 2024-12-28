@@ -11,7 +11,10 @@ import studing.studing_server.common.dto.SuccessMessage;
 import studing.studing_server.common.dto.SuccessStatusResponse;
 import studing.studing_server.common.exception.message.BusinessException;
 import studing.studing_server.common.exception.message.ErrorMessage;
+import studing.studing_server.member.dto.ChangePasswordRequest;
 import studing.studing_server.member.dto.CheckLoginIdRequest;
+import studing.studing_server.member.dto.FindPasswordRequest;
+import studing.studing_server.member.dto.FindPasswordResponse;
 import studing.studing_server.member.dto.MemberCreateRequest;
 import studing.studing_server.member.dto.MemberResubmitRequest;
 import studing.studing_server.member.dto.SignUpResponse;
@@ -73,6 +76,31 @@ public class MemberController {
     }
 
 
+
+    @PostMapping("/find-password")
+    public ResponseEntity<SuccessStatusResponse<FindPasswordResponse>> findPassword(
+            @RequestBody FindPasswordRequest request) {
+        FindPasswordResponse response = memberService.findPassword(request.loginIdentifier());
+        return ResponseEntity.ok()
+                .body(SuccessStatusResponse.of(SuccessMessage.PASSWORD_RESET_SUCCESS, response));
+    }
+    @PostMapping("/change-password")
+    public ResponseEntity<SuccessStatusResponse<Void>> changePassword(
+            HttpServletRequest request,
+            @RequestBody ChangePasswordRequest changePasswordRequest) {
+
+        String loginIdentifier = jwtUtil.getLoginIdentifier(
+                request.getHeader("Authorization").split(" ")[1]);
+
+        memberService.changePassword(
+                loginIdentifier,
+                changePasswordRequest.currentPassword(),
+                changePasswordRequest.newPassword()
+        );
+
+        return ResponseEntity.ok()
+                .body(SuccessStatusResponse.of(SuccessMessage.PASSWORD_CHANGE_SUCCESS));
+    }
 
 
 }

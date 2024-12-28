@@ -79,6 +79,8 @@ public class SecurityConfig {
                 "api/v1/member/resubmit",
                 "api/v1/member/withdraw",
                 "api/v1/home/mydata",
+                "/api/v1/member/change-password",
+                "/api/v1/member/find-password",
                 "/",
         };
     }

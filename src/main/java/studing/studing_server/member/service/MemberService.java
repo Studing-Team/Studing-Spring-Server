@@ -3,6 +3,7 @@ package studing.studing_server.member.service;
 import com.amplitude.Amplitude;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
+import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,6 +14,7 @@ import studing.studing_server.common.exception.message.BusinessException;
 import studing.studing_server.common.exception.message.ErrorMessage;
 import studing.studing_server.external.S3Service;
 import studing.studing_server.member.dto.CheckLoginIdRequest;
+import studing.studing_server.member.dto.FindPasswordResponse;
 import studing.studing_server.member.dto.MemberCreateRequest;
 import studing.studing_server.member.dto.MemberResubmitRequest;
 import studing.studing_server.member.dto.SignUpResponse;
@@ -213,9 +215,77 @@ public class MemberService {
     }
 
 
+    @Transactional
+    public FindPasswordResponse findPassword(String loginIdentifier) {
+        // 사용자 찾기
+        Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
+        // 임시 비밀번호 생성 (8자리)
+        String temporaryPassword = generateTemporaryPassword();
 
+        // 비밀번호 암호화
+        String encodedPassword = bCryptPasswordEncoder.encode(temporaryPassword);
 
+        // 암호화된 임시 비밀번호로 업데이트
+        member.setPassword(encodedPassword);
+        memberRepository.save(member);
 
+        return new FindPasswordResponse(temporaryPassword);
+    }
+
+    private String generateTemporaryPassword() {
+        String upperCase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String lowerCase = "abcdefghijklmnopqrstuvwxyz";
+        String numbers = "0123456789";
+        String specialChars = "!@#$%^&*";
+
+        // 8-16 사이의 랜덤 길이 생성
+        Random random = new Random();
+        int length = random.nextInt(9) + 8; // 8부터 16 사이의 랜덤 길이
+
+        StringBuilder password = new StringBuilder();
+
+        // 각 필수 문자 유형에서 최소 1개씩 추가
+        password.append(upperCase.charAt(random.nextInt(upperCase.length())));
+        password.append(lowerCase.charAt(random.nextInt(lowerCase.length())));
+        password.append(numbers.charAt(random.nextInt(numbers.length())));
+        password.append(specialChars.charAt(random.nextInt(specialChars.length())));
+
+        // 모든 문자 유형을 합침
+        String allChars = upperCase + lowerCase + numbers + specialChars;
+
+        // 나머지 길이만큼 랜덤 문자 추가
+        for (int i = 4; i < length; i++) {
+            password.append(allChars.charAt(random.nextInt(allChars.length())));
+        }
+
+        // 생성된 비밀번호를 섞음
+        char[] passwordArray = password.toString().toCharArray();
+        for (int i = passwordArray.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            char temp = passwordArray[i];
+            passwordArray[i] = passwordArray[j];
+            passwordArray[j] = temp;
+        }
+
+        return new String(passwordArray);
+    }
+
+    @Transactional
+    public void changePassword(String loginIdentifier, String currentPassword, String newPassword) {
+        Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 현재 비밀번호 확인
+        if (!bCryptPasswordEncoder.matches(currentPassword, member.getPassword())) {
+            throw new BusinessException(ErrorMessage.LOGIN_PASSWORD_INVALID);
+        }
+
+        // 새로운 비밀번호 암호화 및 저장
+        String encodedNewPassword = bCryptPasswordEncoder.encode(newPassword);
+        member.setPassword(encodedNewPassword);
+        memberRepository.save(member);
+    }
 
 }
