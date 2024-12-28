@@ -86,14 +86,10 @@ public class MemberController {
     }
     @PostMapping("/change-password")
     public ResponseEntity<SuccessStatusResponse<Void>> changePassword(
-            HttpServletRequest request,
             @RequestBody ChangePasswordRequest changePasswordRequest) {
 
-        String loginIdentifier = jwtUtil.getLoginIdentifier(
-                request.getHeader("Authorization").split(" ")[1]);
-
         memberService.changePassword(
-                loginIdentifier,
+                changePasswordRequest.loginIdentifier(),
                 changePasswordRequest.currentPassword(),
                 changePasswordRequest.newPassword()
         );
