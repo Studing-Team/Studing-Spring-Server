@@ -272,5 +272,20 @@ public class MemberService {
         return new String(passwordArray);
     }
 
+    @Transactional
+    public void changePassword(String loginIdentifier, String currentPassword, String newPassword) {
+        Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 현재 비밀번호 확인
+        if (!bCryptPasswordEncoder.matches(currentPassword, member.getPassword())) {
+            throw new BusinessException(ErrorMessage.LOGIN_PASSWORD_INVALID);
+        }
+
+        // 새로운 비밀번호 암호화 및 저장
+        String encodedNewPassword = bCryptPasswordEncoder.encode(newPassword);
+        member.setPassword(encodedNewPassword);
+        memberRepository.save(member);
+    }
 
 }
