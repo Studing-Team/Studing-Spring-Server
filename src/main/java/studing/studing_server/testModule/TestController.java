@@ -20,7 +20,7 @@ public class TestController {
 
     @GetMapping("/test")
     public String test() {
-        return "CI/CD 테스트 API 입니다!     chexck";
+        return "CI/CD 테스트 API 입니다!     chexck devvv2";
     }
 
     @GetMapping("/health")
