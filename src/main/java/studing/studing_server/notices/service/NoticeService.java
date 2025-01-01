@@ -799,5 +799,92 @@ public class NoticeService {
     }
 
 
+    @Transactional
+    public void deleteNotice(String loginIdentifier, Long noticeId) {
+        // 현재 사용자 조회
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        // 작성자 확인
+        if (!notice.getMember().getId().equals(currentMember.getId())) {
+            throw new IllegalStateException("해당 공지사항의 작성자만 삭제할 수 있습니다.");
+        }
+
+        // S3에서 이미지 삭제
+        if (notice.getNoticeImages() != null && !notice.getNoticeImages().isEmpty()) {
+            for (NoticeImage image : notice.getNoticeImages()) {
+                try {
+                    s3Service.deleteImage(image.getNoticeImage());
+                } catch (IOException e) {
+                    log.error("이미지 삭제 실패: {}", e.getMessage());
+                }
+            }
+        }
+
+        // 공지사항 삭제
+        noticeRepository.delete(notice);
+    }
+
+
+
+
+
+
+    @Transactional
+    public void updateNotice(String loginIdentifier, Long noticeId, NoticeCreateRequest updateRequest) {
+        // 현재 사용자 조회
+        Member currentMember = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        // 작성자 확인
+        if (!notice.getMember().getId().equals(currentMember.getId())) {
+            throw new IllegalStateException("해당 공지사항의 작성자만 수정할 수 있습니다.");
+        }
+
+        // 기존 이미지 삭제
+        if (updateRequest.noticeImages() != null && !updateRequest.noticeImages().isEmpty()) {
+            // 기존 이미지 S3에서 삭제
+            for (NoticeImage image : notice.getNoticeImages()) {
+                try {
+                    s3Service.deleteImage(image.getNoticeImage());
+                } catch (IOException e) {
+                    log.error("이미지 삭제 실패: {}", e.getMessage());
+                }
+            }
+            notice.getNoticeImages().clear();
+
+            // 새 이미지 업로드 및 저장
+            for (MultipartFile file : updateRequest.noticeImages()) {
+                String fileName = storeFile(file);
+                NoticeImage noticeImage = NoticeImage.builder()
+                        .notice(notice)
+                        .noticeImage(fileName)
+                        .build();
+                notice.addNoticeImage(noticeImage);
+                noticeImageRepository.save(noticeImage);
+            }
+        }
+
+        // 공지사항 내용 업데이트
+        notice.setTitle(updateRequest.title());
+        notice.setContent(updateRequest.content());
+        notice.setTag(updateRequest.tag());
+
+        noticeRepository.save(notice);
+    }
+
+
+
+
+
+
 
 }

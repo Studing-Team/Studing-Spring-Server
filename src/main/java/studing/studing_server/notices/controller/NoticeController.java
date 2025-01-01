@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -169,6 +170,32 @@ public class NoticeController {
                 .status(HttpStatus.CREATED)
                 .body(SuccessStatusResponse.of(SuccessMessage.UNREAD_NOTICES_FETCH_SUCCESS, response));
     }
+
+
+
+    @DeleteMapping("/{noticeId}")
+    public ResponseEntity<SuccessStatusResponse<Void>> deleteNotice(
+            HttpServletRequest request,
+            @PathVariable Long noticeId) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        noticeService.deleteNotice(loginIdentifier, noticeId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_DELETE_SUCCESS));
+    }
+
+    @PutMapping("/{noticeId}")
+    public ResponseEntity<SuccessStatusResponse<Void>> updateNotice(
+            HttpServletRequest request,
+            @PathVariable Long noticeId,
+            @ModelAttribute NoticeCreateRequest noticeUpdateRequest) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        noticeService.updateNotice(loginIdentifier, noticeId, noticeUpdateRequest);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_UPDATE_SUCCESS));
+    }
+
 
 
 }
