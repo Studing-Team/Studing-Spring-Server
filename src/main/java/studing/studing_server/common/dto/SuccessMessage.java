@@ -44,6 +44,8 @@ public enum SuccessMessage {
     UNREAD_NOTICES_FETCH_SUCCESS(HttpStatus.CREATED.value(), "카테고리별 놓친 공지 조회에 성공하였습니다."),
     // SuccessMessage에 추가
     SAVED_NOTICES_BY_CATEGORY_SUCCESS(HttpStatus.CREATED.value(), "카테고리별 저장한 공지들 조회에 성공하였습니다."),
+    NOTICE_DELETE_SUCCESS(HttpStatus.OK.value(), "공지사항 삭제에 성공하였습니다."),
+    NOTICE_UPDATE_SUCCESS(HttpStatus.OK.value(), "공지사항 수정에 성공하였습니다."),
 //    JWT_LOGIN_SUCCESS(HttpStatus.UNAUTHORIZED.value(), "가입된 계정이 없습니다 아이디와 비밀번호를 다시 확인해주세요."),
 RECENT_NOTICES_FETCH_SUCCESS(HttpStatus.CREATED.value(), "최근 공지사항 조회에 성공하였습니다."),
     ALL_NOTICES_FETCH_SUCCESS(HttpStatus.CREATED.value(), "모든 공지사항 조회에 성공하였습니다."),
