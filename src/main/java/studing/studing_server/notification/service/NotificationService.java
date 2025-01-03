@@ -41,20 +41,29 @@ public class NotificationService {
         String token = fcmTokenRepository.findValidTokenByMemberId(memberId)
                 .orElseThrow(() -> new RuntimeException("No valid token found for member: " + memberId));
 
-        Notification notification = Notification.builder().setTitle(title).setBody(body).build();
+        // 기존 data에 title과 body도 포함시킴
+        data.put("title", title);
+        data.put("body", body);
 
-
-        // 메시지 구성
+        // notification 필드 없이 data만 포함하여 메시지 구성
         Message message = Message.builder()
-                .setToken(token) // 조회한 토큰 값을 사용
-                .setNotification(notification)
-                .putAllData(data)  // 추가 데이터 포함
+                .setToken(token)
+                .putAllData(data)  // 모든 데이터를 data 필드로 전송
                 .build();
 
         try {
-            // 메시지 전송
-            System.out.println("ㅁㅁㅁㅁㅁㅁㅁㅁㅁㅁ " );
-            data.forEach((key, value) -> System.out.println(key + ": " + value));
+            // 프론트엔드가 받게 될 페이로드 출력
+            System.out.println("\n======= FCM Payload for Frontend =======");
+
+            // Data 필드
+            System.out.println("data: {");
+            data.forEach((key, value) ->
+                    System.out.println("    " + key + ": " + value));
+            System.out.println("}");
+
+            System.out.println("token: " + token);
+            System.out.println("=====================================\n");
+
 
             String response= firebaseMessaging.send(message);
             log.info("Message sent successfully: {}", response);
