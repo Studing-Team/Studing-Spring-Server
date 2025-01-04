@@ -6,14 +6,20 @@ import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import java.io.IOException;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import studing.studing_server.member.entity.Member;
+import studing.studing_server.member.repository.MemberRepository;
+import studing.studing_server.notices.entity.Notice;
+import studing.studing_server.notices.repository.NoticeRepository;
 import studing.studing_server.notification.entity.FCMToken;
+import studing.studing_server.notification.entity.NoticeAlarm;
 import studing.studing_server.notification.repository.FCMTokenRepository;
+import studing.studing_server.notification.repository.NoticeAlarmRepository;
 
 
 @Slf4j
@@ -24,6 +30,10 @@ public class NotificationService {
 
     private final FCMTokenRepository fcmTokenRepository;
     private final FirebaseMessaging  firebaseMessaging;
+    private final MemberRepository memberRepository;
+    private final NoticeRepository noticeRepository;
+    private final NoticeAlarmRepository noticeAlarmRepository;  // 추가
+
 
     @Transactional
     public void saveToken(Member member, String token) {
@@ -81,7 +91,42 @@ public class NotificationService {
     }
 
 
+    @Transactional
+    public void setNoticeAlarm(String loginIdentifier, Long noticeId, LocalDateTime alarmTime) {
+        // 현재 시간과 비교하여 과거 시간인지 확인
+        if (alarmTime.isBefore(LocalDateTime.now())) {
+            throw new IllegalArgumentException("알림 시간은 현재 시간 이후로 설정해야 합니다.");
+        }
 
+        // 회원 조회
+        Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        // 이미 설정된 알림이 있는지 확인
+        if (noticeAlarmRepository.existsByNoticeIdAndMemberIdAndIsCompletedFalse(noticeId, member.getId())) {
+            throw new IllegalStateException("이미 해당 공지사항에 대한 알림이 설정되어 있습니다.");
+        }
+
+        // FCM 토큰이 있는지 확인
+        fcmTokenRepository.findValidTokenByMemberId(member.getId())
+                .orElseThrow(() -> new IllegalStateException("알림을 받을 수 있는 기기가 등록되어 있지 않습니다."));
+
+        // 알림 설정 저장
+        NoticeAlarm noticeAlarm = NoticeAlarm.builder()
+                .notice(notice)
+                .member(member)
+                .alarmTime(alarmTime)
+                .build();
+
+        noticeAlarmRepository.save(noticeAlarm);
+
+        log.info("Notice alarm set - MemberId: {}, NoticeId: {}, AlarmTime: {}",
+                member.getId(), noticeId, alarmTime);
+    }
 
 
 
