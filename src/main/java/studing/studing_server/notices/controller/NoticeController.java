@@ -51,6 +51,10 @@ public class NoticeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.ALL_NOTICES_FETCH_SUCCESS, response));
     }
 
+
+
+
+
     @PostMapping("/all-category")
     public ResponseEntity<SuccessStatusResponse<RecentNoticesResponse2>> getAllCategoryNotices(
             HttpServletRequest request,

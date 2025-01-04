@@ -76,8 +76,9 @@ public class NotificationService {
 
 
             String response= firebaseMessaging.send(message);
-            log.info("Message sent successfully: {}", response);
-            System.out.println("Message sent successfully: " + response);
+            log.info("Message sent successfully for memberId: {} - Response: {}", memberId, response);
+            System.out.println("Message sent successfully for memberId: " + memberId + " - Response: " + response);
+
 
         } catch (FirebaseMessagingException e) {
             System.out.println("Failed to send message");
