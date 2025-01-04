@@ -29,6 +29,7 @@ public enum SuccessMessage {
     NOTICE_SAVE_SUCCESS(HttpStatus.CREATED.value(), "공지사항 저장에 성공하였습니다."),
     // SuccessMessage.java에 추가
     STUDENT_CARD_RESUBMIT_SUCCESS(HttpStatus.OK.value(), "학생증 재제출이 완료되었습니다."),
+    NOTICE_ALARM_CANCEL_SUCCESS(HttpStatus.OK.value(), "공지사항 알림 취소가 완료되었습니다."),
     // SuccessMessage.java에 추가
     PASSWORD_CHANGE_SUCCESS(HttpStatus.OK.value(), "비밀번호가 성공적으로 변경되었습니다."),
     // SuccessMessage에 추가

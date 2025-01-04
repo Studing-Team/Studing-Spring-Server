@@ -69,7 +69,20 @@ public class NotificationController {
 
 
 
+    @DeleteMapping("/alarm/notice/{noticeId}")
+    public ResponseEntity<SuccessStatusResponse<Void>> cancelNoticeAlarm(
+            HttpServletRequest request,
+            @PathVariable Long noticeId) {
 
+        String loginIdentifier = jwtUtil.getLoginIdentifier(
+                request.getHeader("Authorization").split(" ")[1]
+        );
+
+        notificationService.cancelNoticeAlarm(loginIdentifier, noticeId);
+
+        return ResponseEntity.ok()
+                .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_ALARM_CANCEL_SUCCESS));
+    }
 
 
 

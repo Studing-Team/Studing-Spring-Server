@@ -129,7 +129,23 @@ public class NotificationService {
     }
 
 
+    @Transactional
+    public void cancelNoticeAlarm(String loginIdentifier, Long noticeId) {
+        // 회원 조회
+        Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
+        // 해당 회원의 공지사항 알림 조회
+        NoticeAlarm noticeAlarm = noticeAlarmRepository
+                .findByNoticeIdAndMemberIdAndIsCompletedFalse(noticeId, member.getId())
+                .orElseThrow(() -> new IllegalStateException("설정된 알림이 없습니다."));
+
+        // 알림 취소 (삭제)
+        noticeAlarmRepository.delete(noticeAlarm);
+
+        log.info("Notice alarm cancelled - MemberId: {}, NoticeId: {}",
+                member.getId(), noticeId);
+    }
 
 
 }
