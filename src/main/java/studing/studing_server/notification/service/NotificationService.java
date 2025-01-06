@@ -51,24 +51,24 @@ public class NotificationService {
         String token = fcmTokenRepository.findValidTokenByMemberId(memberId)
                 .orElseThrow(() -> new RuntimeException("No valid token found for member: " + memberId));
 
-        Notification notification = Notification.builder().setTitle(title).setBody(body).build();
-
-        // 메시지 구성
-        Message message = Message.builder()
-                .setToken(token) // 조회한 토큰 값을 사용
-                .setNotification(notification)
-                .putAllData(data)  // 추가 데이터 포함
-                .build();
-
-//        // 기존 data에 title과 body도 포함시킴
-//        data.put("title", title);
-//        data.put("body", body);
+//        Notification notification = Notification.builder().setTitle(title).setBody(body).build();
 //
-//        // notification 필드 없이 data만 포함하여 메시지 구성
+//        // 메시지 구성
 //        Message message = Message.builder()
-//                .setToken(token)
-//                .putAllData(data)  // 모든 데이터를 data 필드로 전송
+//                .setToken(token) // 조회한 토큰 값을 사용
+//                .setNotification(notification)
+//                .putAllData(data)  // 추가 데이터 포함
 //                .build();
+
+        // 기존 data에 title과 body도 포함시킴
+        data.put("title", title);
+        data.put("body", body);
+
+        // notification 필드 없이 data만 포함하여 메시지 구성
+        Message message = Message.builder()
+                .setToken(token)
+                .putAllData(data)  // 모든 데이터를 data 필드로 전송
+                .build();
 
 
 
