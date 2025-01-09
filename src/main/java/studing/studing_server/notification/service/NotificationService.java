@@ -48,30 +48,34 @@ public class NotificationService {
 
     public void sendNotificationToMember(Long memberId, String title, String body, Map<String, String> data){
 
-
-
-        String token = fcmTokenRepository.findValidTokenByMemberId(memberId)
+        FCMToken fcmToken = fcmTokenRepository.findValidTokenByMemberId(memberId)
+                .map(token -> fcmTokenRepository.findByTokenAndEnabledTrue(token)
+                        .orElseThrow(() -> new RuntimeException("No valid token found for member: " + memberId)))
                 .orElseThrow(() -> new RuntimeException("No valid token found for member: " + memberId));
 
-//        Notification notification = Notification.builder().setTitle(title).setBody(body).build();
-//
-//        // 메시지 구성
-//        Message message = Message.builder()
-//                .setToken(token) // 조회한 토큰 값을 사용
-//                .setNotification(notification)
-//                .putAllData(data)  // 추가 데이터 포함
-//                .build();
+        Message message;
+        if ("iOS".equalsIgnoreCase(fcmToken.getPlatform())) {
+            // iOS용 메시지 구성
+            Notification notification = Notification.builder()
+                    .setTitle(title)
+                    .setBody(body)
+                    .build();
 
-        // 기존 data에 title과 body도 포함시킴
-        data.put("title", title);
-        data.put("body", body);
+            message = Message.builder()
+                    .setToken(fcmToken.getToken())
+                    .setNotification(notification)
+                    .putAllData(data)
+                    .build();
+        } else {
+            // Android용 메시지 구성
+            data.put("title", title);
+            data.put("body", body);
 
-        // notification 필드 없이 data만 포함하여 메시지 구성
-        Message message = Message.builder()
-                .setToken(token)
-                .putAllData(data)  // 모든 데이터를 data 필드로 전송
-                .build();
-
+            message = Message.builder()
+                    .setToken(fcmToken.getToken())
+                    .putAllData(data)
+                    .build();
+        }
 
 
 
@@ -79,14 +83,14 @@ public class NotificationService {
         try {
             // 프론트엔드가 받게 될 페이로드 출력
             System.out.println("\n======= FCM Payload for Frontend =======");
-
+            System.out.println("Platform: " + fcmToken.getPlatform());
             // Data 필드
             System.out.println("data: {");
             data.forEach((key, value) ->
                     System.out.println("    " + key + ": " + value));
             System.out.println("}");
 
-            System.out.println("token: " + token);
+            System.out.println("token: " + fcmToken.getToken());
             System.out.println("=====================================\n");
 
 
