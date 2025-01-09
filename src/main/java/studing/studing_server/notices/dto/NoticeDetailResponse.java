@@ -17,7 +17,8 @@ public record NoticeDetailResponse(
         String tag,
         List<String> images,
         boolean saveCheck,
-        boolean likeCheck
+        boolean likeCheck,
+        boolean isAuthor
 ) {
     public static NoticeDetailResponse from(
             Long id,
@@ -32,7 +33,8 @@ public record NoticeDetailResponse(
             String tag,
             List<String> images,
             boolean saveCheck,
-            boolean likeCheck
+            boolean likeCheck,
+            boolean isAuthor
     ) {
         return new NoticeDetailResponse(
                 id,
@@ -47,7 +49,8 @@ public record NoticeDetailResponse(
                 tag,
                 images,
                 saveCheck,
-                likeCheck
+                likeCheck,
+                isAuthor
         );
     }
 }

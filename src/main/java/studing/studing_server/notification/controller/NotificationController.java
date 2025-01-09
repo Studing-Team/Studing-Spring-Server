@@ -32,7 +32,7 @@ public class NotificationController {
         Member member = memberRepository.findById(request.memberId())
                 .orElseThrow(() -> new RuntimeException("Member not found"));
 
-        notificationService.saveToken(member, request.fcmToken());
+        notificationService.saveToken(member, request.fcmToken(), request.platform());
 
         return ResponseEntity.ok()
                 .body(SuccessStatusResponse.of(SuccessMessage.NOTIFICATION_TOKEN_REGISTERED));

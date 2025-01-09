@@ -506,6 +506,8 @@ public class NoticeService {
                 noticeId
         );
 
+        boolean isAuthor = currentMember.getId().equals(noticeWriter.getId());
+
         // 이미지 URL 리스트 생성 (S3 버킷 URL 추가)
         List<String> images = notice.getNoticeImages().stream()
                 .map(NoticeImage::getNoticeImage)
@@ -526,7 +528,8 @@ public class NoticeService {
                 notice.getTag(),
                 images,
                 saveCheck,
-                likeCheck
+                likeCheck,
+                isAuthor
         );
     }
 
