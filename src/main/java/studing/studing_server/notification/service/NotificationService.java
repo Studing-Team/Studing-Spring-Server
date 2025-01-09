@@ -36,17 +36,19 @@ public class NotificationService {
 
 
     @Transactional
-    public void saveToken(Member member, String token) {
+    public void saveToken(Member member, String token, String platform) {
         // 기존 토큰이 있다면 비활성화
         fcmTokenRepository.findByTokenAndEnabledTrue(token)
                 .ifPresent(FCMToken::disable);
 
         // 새 토큰 저장
-        FCMToken fcmToken = new FCMToken(token, member);
+        FCMToken fcmToken = new FCMToken(token, platform, member);
         fcmTokenRepository.save(fcmToken);
     }
 
     public void sendNotificationToMember(Long memberId, String title, String body, Map<String, String> data){
+
+
 
         String token = fcmTokenRepository.findValidTokenByMemberId(memberId)
                 .orElseThrow(() -> new RuntimeException("No valid token found for member: " + memberId));

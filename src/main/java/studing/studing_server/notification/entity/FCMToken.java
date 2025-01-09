@@ -27,8 +27,9 @@ public class FCMToken {
 
     private boolean enabled = true;
 
-    public FCMToken(String token, Member member) {
+    public FCMToken(String token, String platform, Member member) {
         this.token = token;
+        this.platform = platform;
         this.member = member;
     }
 
