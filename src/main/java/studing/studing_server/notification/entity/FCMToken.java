@@ -22,6 +22,9 @@ public class FCMToken {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Column(nullable = false)
+    private String platform; // "iOS" 또는 "ANDROID"
+
     private boolean enabled = true;
 
     public FCMToken(String token, Member member) {
