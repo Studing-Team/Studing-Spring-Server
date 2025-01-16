@@ -748,6 +748,8 @@ public class NoticeService {
                         currentMember.getId(),
                         notice.getId()
                 );
+                // 작성자 본인 여부 확인
+                boolean isAuthor = currentMember.getId().equals(noticeWriter.getId());
 
 
                 unreadNotices.add(UnreadNoticeResponse.from(
@@ -763,7 +765,8 @@ public class NoticeService {
                         notice.getTag(),
                         images,
                         saveCheck,
-                        likeCheck
+                        likeCheck,
+                        isAuthor    // 추가된 매개변수
                 ));
             }
         }

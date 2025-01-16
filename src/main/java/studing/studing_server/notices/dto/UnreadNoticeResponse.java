@@ -17,7 +17,8 @@ public record UnreadNoticeResponse(
         String tag,
         List<String> images,
         boolean saveCheck,
-        boolean likeCheck
+        boolean likeCheck,
+        boolean isAuthor
 ) {
     public static UnreadNoticeResponse from(
             Long id,
@@ -32,7 +33,8 @@ public record UnreadNoticeResponse(
             String tag,
             List<String> images,
             boolean saveCheck,
-            boolean likeCheck
+            boolean likeCheck,
+            boolean isAuthor
     ) {
         return new UnreadNoticeResponse(
                 id,
@@ -47,7 +49,8 @@ public record UnreadNoticeResponse(
                 tag,
                 images,
                 saveCheck,
-                likeCheck
+                likeCheck,
+                isAuthor
         );
     }
 }
