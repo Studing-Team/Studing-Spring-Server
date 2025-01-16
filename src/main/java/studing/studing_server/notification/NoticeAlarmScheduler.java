@@ -38,11 +38,15 @@ public class NoticeAlarmScheduler {
                 data.put("noticeId", alarm.getNotice().getId().toString());
                 data.put("type", "NOTICE_ALARM");
 
+                // 사용자 이름을 포함한 알림 메시지 생성
+                String alarmMessage = String.format("%s님이 설정하신 리마인드 시간이에요. 놓치면 안 될 중요한 공지가 있어요!",
+                        alarm.getMember().getName());
+
                 // 알림 발송
                 notificationService.sendNotificationToMember(
                         alarm.getMember().getId(),
-                        "공지사항 알림",
-                        alarm.getNotice().getTitle(),  // 공지사항 제목을 알림 내용으로 사용
+                        "\uD83D\uDCE2 중요 공지 리마인드! 꼭 확인해야 할 공지가 있어요!",
+                        alarmMessage,
                         data
                 );
 
