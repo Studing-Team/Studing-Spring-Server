@@ -23,6 +23,7 @@ import studing.studing_server.home.dto.notice.RecentNoticesResponse;
 import studing.studing_server.notices.dto.RecentNoticesResponse2;
 import studing.studing_server.notices.dto.SavedNoticesResponse2;
 import studing.studing_server.notices.dto.UnreadNoticesResponse;
+import studing.studing_server.notices.dto.fistCom.FirstComeRankResponse;
 import studing.studing_server.notices.service.NoticeService;
 
 @RestController
@@ -211,5 +212,23 @@ public class NoticeController {
                 .status(HttpStatus.CREATED)
                 .body(SuccessStatusResponse.of(SuccessMessage.FIRST_COME_APPLY_SUCCESS));
     }
+
+
+    @GetMapping("/first-come/rankings/{noticeId}")
+    public ResponseEntity<SuccessStatusResponse<FirstComeRankResponse>> getFirstComeRankings(
+            HttpServletRequest request,
+            @PathVariable Long noticeId) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        FirstComeRankResponse response = noticeService.getFirstComeRankings(loginIdentifier, noticeId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(SuccessStatusResponse.of(SuccessMessage.FIRST_COME_RANKINGS_FETCH_SUCCESS, response));
+    }
+
+
+
+
+
 
 }

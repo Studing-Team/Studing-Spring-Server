@@ -30,6 +30,8 @@ import studing.studing_server.notices.dto.SavedNoticeResponse2;
 import studing.studing_server.notices.dto.SavedNoticesResponse2;
 import studing.studing_server.notices.dto.UnreadNoticeResponse;
 import studing.studing_server.notices.dto.UnreadNoticesResponse;
+import studing.studing_server.notices.dto.fistCom.FirstComeRankItem;
+import studing.studing_server.notices.dto.fistCom.FirstComeRankResponse;
 import studing.studing_server.notices.entity.FirstComeData;
 import studing.studing_server.notices.entity.Notice;
 import studing.studing_server.notices.entity.NoticeImage;
@@ -129,6 +131,7 @@ public class NoticeService {
                 .member(member)
                 .startTime(request.startTime())  // 추가
                 .endTime(request.endTime())      // 추가
+                .firstComeNumber(request.firstComeNumber())
                 .build();
         noticeRepository.save(notice);
         return notice;
@@ -911,12 +914,12 @@ public class NoticeService {
 
         // 선착순 공지가 아닌 경우 예외 처리
         if (notice.getFirstComeNumber() == null) {
-            throw new IllegalStateException("선착순 신청이 불가능한 공지사항입니다.");
+            throw new BusinessException(ErrorMessage.NOT_FIRST_COME_NOTICE);
         }
 
         // 이미 신청한 사용자인지 확인
         if (firstComeDataRepository.existsByNoticeIdAndStudentNumber(noticeId, member.getStudentNumber())) {
-            throw new IllegalStateException("이미 신청한 공지사항입니다.");
+            throw new BusinessException(ErrorMessage.ALREADY_APPLIED);
         }
 
         // 현재 신청 인원 확인
@@ -924,16 +927,16 @@ public class NoticeService {
 
         // 인원 초과 확인
         if (currentApplicants >= notice.getFirstComeNumber()) {
-            throw new IllegalStateException("선착순 신청 인원이 초과되었습니다.");
+            throw new BusinessException(ErrorMessage.EXCEED_FIRST_COME_NUMBER);
         }
 
         // 신청 시간이 유효한지 확인
         LocalDateTime now = LocalDateTime.now();
         if (notice.getStartTime() != null && now.isBefore(notice.getStartTime())) {
-            throw new IllegalStateException("아직 신청 시간이 되지 않았습니다.");
+            throw new BusinessException(ErrorMessage.NOT_STARTED_FIRST_COME);
         }
         if (notice.getEndTime() != null && now.isAfter(notice.getEndTime())) {
-            throw new IllegalStateException("신청 기간이 종료되었습니다.");
+            throw new BusinessException(ErrorMessage.ENDED_FIRST_COME);
         }
 
         // 현재 마지막 순번 조회 후 새로운 순번 생성
@@ -955,6 +958,38 @@ public class NoticeService {
                 noticeId, member.getStudentNumber(), orderNumber);
     }
 
+    @Transactional(readOnly = true)
+    public FirstComeRankResponse getFirstComeRankings(String loginIdentifier, Long noticeId) {
+        // 현재 사용자 조회
+        Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        // 선착순 공지가 아닌 경우 예외 처리
+        if (notice.getFirstComeNumber() == null) {
+            throw new BusinessException(ErrorMessage.NOT_FIRST_COME_NOTICE);
+        }
+
+        // 선착순 신청 목록 조회 (orderNumber 오름차순)
+        List<FirstComeData> rankings = firstComeDataRepository
+                .findByNoticeIdOrderByOrderNumberAsc(noticeId);
+
+        // 현재 사용자의 순번 조회
+        Integer myRanking = firstComeDataRepository
+                .findByNoticeIdAndStudentNumber(noticeId, member.getStudentNumber())
+                .map(FirstComeData::getOrderNumber)
+                .orElse(null);
+
+        // 응답 데이터 생성
+        List<FirstComeRankItem> rankItems = rankings.stream()
+                .map(FirstComeRankItem::from)
+                .collect(Collectors.toList());
+
+        return new FirstComeRankResponse(rankItems, myRanking);
+    }
 
 
 }

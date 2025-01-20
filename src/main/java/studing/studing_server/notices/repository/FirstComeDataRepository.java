@@ -11,4 +11,6 @@ public interface FirstComeDataRepository extends JpaRepository<FirstComeData, Lo
     long countByNoticeId(Long noticeId);
     boolean existsByNoticeIdAndStudentNumber(Long noticeId, String studentNumber);
 
+    Optional<FirstComeData> findByNoticeIdAndStudentNumber(Long noticeId, String studentNumber);
 }
+
