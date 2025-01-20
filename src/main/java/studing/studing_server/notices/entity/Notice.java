@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Builder;
@@ -40,6 +41,13 @@ public class Notice extends BaseTimeEntity {
     private Long viewCount = 0L;
     private Long saveCount = 0L;
 
+    @Column(nullable = true)
+    private LocalDateTime startTime;
+
+    @Column(nullable = true)
+    private LocalDateTime endTime;
+
+
     @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NoticeImage> noticeImages = new ArrayList<>();
 
@@ -57,14 +65,17 @@ public class Notice extends BaseTimeEntity {
     private List<NoticeLike> noticeLikes;
 
     @Builder
-    public Notice(String title, String content, Member member, String tag) {
+    public Notice(String title, String content, Member member, String tag,
+                  LocalDateTime startTime, LocalDateTime endTime) {
         this.title = title;
         this.content = content;
         this.member = member;
-        this.tag=tag;
+        this.tag = tag;
+        this.startTime = startTime;
+        this.endTime = endTime;
         this.noticeLike = 0L;
         this.viewCount = 0L;
-        this.saveCount=0L;
+        this.saveCount = 0L;
     }
     public void setNoticeLike(Long noticeLike) {
         this.noticeLike = noticeLike;

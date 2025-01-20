@@ -18,7 +18,9 @@ public record NoticeDetailResponse(
         List<String> images,
         boolean saveCheck,
         boolean likeCheck,
-        boolean isAuthor
+        boolean isAuthor,
+        String startTime,   // 추가
+        String endTime     // 추가
 ) {
     public static NoticeDetailResponse from(
             Long id,
@@ -34,7 +36,10 @@ public record NoticeDetailResponse(
             List<String> images,
             boolean saveCheck,
             boolean likeCheck,
-            boolean isAuthor
+            boolean isAuthor,
+            LocalDateTime startTime,
+            LocalDateTime endTime
+
     ) {
         return new NoticeDetailResponse(
                 id,
@@ -50,7 +55,9 @@ public record NoticeDetailResponse(
                 images,
                 saveCheck,
                 likeCheck,
-                isAuthor
+                isAuthor,
+                startTime != null ? startTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
+                endTime != null ? endTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null
         );
     }
 }

@@ -124,6 +124,8 @@ public class NoticeService {
                 .tag(request.tag())
                 .content(request.content())
                 .member(member)
+                .startTime(request.startTime())  // 추가
+                .endTime(request.endTime())      // 추가
                 .build();
         noticeRepository.save(notice);
         return notice;
@@ -529,7 +531,9 @@ public class NoticeService {
                 images,
                 saveCheck,
                 likeCheck,
-                isAuthor
+                isAuthor,
+                notice.getStartTime(),
+                notice.getEndTime()
         );
     }
 
