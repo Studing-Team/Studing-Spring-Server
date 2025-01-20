@@ -200,6 +200,16 @@ public class NoticeController {
                 .body(SuccessStatusResponse.of(SuccessMessage.NOTICE_UPDATE_SUCCESS));
     }
 
+    @PostMapping("/first-come/{noticeId}")
+    public ResponseEntity<SuccessStatusResponse<Void>> applyFirstCome(
+            HttpServletRequest request,
+            @PathVariable Long noticeId) {
+        String loginIdentifier = jwtUtil.getLoginIdentifier(request.getHeader("Authorization").split(" ")[1]);
+        noticeService.applyFirstCome(loginIdentifier, noticeId);
 
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(SuccessStatusResponse.of(SuccessMessage.FIRST_COME_APPLY_SUCCESS));
+    }
 
 }

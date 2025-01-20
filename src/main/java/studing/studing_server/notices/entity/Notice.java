@@ -47,6 +47,12 @@ public class Notice extends BaseTimeEntity {
     @Column(nullable = true)
     private LocalDateTime endTime;
 
+    @Column(nullable = true)
+    private Integer firstComeNumber;  // 선착순 인원수
+    @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FirstComeData> firstComeDatas = new ArrayList<>();
+
+
 
     @OneToMany(mappedBy = "notice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NoticeImage> noticeImages = new ArrayList<>();
@@ -66,7 +72,7 @@ public class Notice extends BaseTimeEntity {
 
     @Builder
     public Notice(String title, String content, Member member, String tag,
-                  LocalDateTime startTime, LocalDateTime endTime) {
+                  LocalDateTime startTime, LocalDateTime endTime, Integer firstComeNumber ) {
         this.title = title;
         this.content = content;
         this.member = member;
@@ -76,6 +82,7 @@ public class Notice extends BaseTimeEntity {
         this.noticeLike = 0L;
         this.viewCount = 0L;
         this.saveCount = 0L;
+        this.firstComeNumber = firstComeNumber;
     }
     public void setNoticeLike(Long noticeLike) {
         this.noticeLike = noticeLike;

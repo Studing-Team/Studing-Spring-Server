@@ -19,9 +19,10 @@ public record NoticeDetailResponse(
         boolean saveCheck,
         boolean likeCheck,
         boolean isAuthor,
-        String startTime,   // 추가
-        String endTime     // 추가
-) {
+        String startTime,
+        String endTime,
+        boolean isFirstComeNotice
+        ) {
     public static NoticeDetailResponse from(
             Long id,
             String title,
@@ -38,7 +39,8 @@ public record NoticeDetailResponse(
             boolean likeCheck,
             boolean isAuthor,
             LocalDateTime startTime,
-            LocalDateTime endTime
+            LocalDateTime endTime,
+            boolean isFirstComeNotice
 
     ) {
         return new NoticeDetailResponse(
@@ -57,7 +59,8 @@ public record NoticeDetailResponse(
                 likeCheck,
                 isAuthor,
                 startTime != null ? startTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
-                endTime != null ? endTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null
+                endTime != null ? endTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
+                isFirstComeNotice
         );
     }
 }

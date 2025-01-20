@@ -13,6 +13,7 @@ public record NoticeCreateRequest(
         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")  // 날짜 형식 지정
         LocalDateTime startTime,
         @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")  // 날짜 형식 지정
-        LocalDateTime endTime
+        LocalDateTime endTime,
+        Integer firstComeNumber
 ) {
 }

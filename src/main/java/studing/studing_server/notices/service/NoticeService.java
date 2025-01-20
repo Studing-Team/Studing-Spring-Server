@@ -30,11 +30,13 @@ import studing.studing_server.notices.dto.SavedNoticeResponse2;
 import studing.studing_server.notices.dto.SavedNoticesResponse2;
 import studing.studing_server.notices.dto.UnreadNoticeResponse;
 import studing.studing_server.notices.dto.UnreadNoticesResponse;
+import studing.studing_server.notices.entity.FirstComeData;
 import studing.studing_server.notices.entity.Notice;
 import studing.studing_server.notices.entity.NoticeImage;
 import studing.studing_server.notices.entity.NoticeLike;
 import studing.studing_server.notices.entity.NoticeView;
 import studing.studing_server.notices.entity.SaveNotice;
+import studing.studing_server.notices.repository.FirstComeDataRepository;
 import studing.studing_server.notices.repository.NoticeImageRepository;
 import studing.studing_server.notices.repository.NoticeLikeRepository;
 import studing.studing_server.notices.repository.NoticeRepository;
@@ -64,6 +66,7 @@ public class NoticeService {
     private final DepartmentRepository departmentRepository;
     private final UniversityDataRepository universityDataRepository;
     private final NotificationService notificationService;
+    private final FirstComeDataRepository firstComeDataRepository;
 
     private final S3Service s3Service;
 
@@ -517,6 +520,8 @@ public class NoticeService {
                 .filter(url -> !url.isEmpty())
                 .collect(Collectors.toList());
 
+        boolean isFirstComeNotice = notice.getFirstComeNumber() != null;
+
         return NoticeDetailResponse.from(
                 notice.getId(),
                 notice.getTitle(),
@@ -533,7 +538,8 @@ public class NoticeService {
                 likeCheck,
                 isAuthor,
                 notice.getStartTime(),
-                notice.getEndTime()
+                notice.getEndTime(),
+                isFirstComeNotice
         );
     }
 
@@ -893,7 +899,61 @@ public class NoticeService {
 
 
 
+    @Transactional
+    public void applyFirstCome(String loginIdentifier, Long noticeId) {
+        // 현재 사용자 조회
+        Member member = memberRepository.findByLoginIdentifier(loginIdentifier)
+                .orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
 
+        // 공지사항 조회
+        Notice notice = noticeRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 공지사항을 찾을 수 없습니다."));
+
+        // 선착순 공지가 아닌 경우 예외 처리
+        if (notice.getFirstComeNumber() == null) {
+            throw new IllegalStateException("선착순 신청이 불가능한 공지사항입니다.");
+        }
+
+        // 이미 신청한 사용자인지 확인
+        if (firstComeDataRepository.existsByNoticeIdAndStudentNumber(noticeId, member.getStudentNumber())) {
+            throw new IllegalStateException("이미 신청한 공지사항입니다.");
+        }
+
+        // 현재 신청 인원 확인
+        long currentApplicants = firstComeDataRepository.countByNoticeId(noticeId);
+
+        // 인원 초과 확인
+        if (currentApplicants >= notice.getFirstComeNumber()) {
+            throw new IllegalStateException("선착순 신청 인원이 초과되었습니다.");
+        }
+
+        // 신청 시간이 유효한지 확인
+        LocalDateTime now = LocalDateTime.now();
+        if (notice.getStartTime() != null && now.isBefore(notice.getStartTime())) {
+            throw new IllegalStateException("아직 신청 시간이 되지 않았습니다.");
+        }
+        if (notice.getEndTime() != null && now.isAfter(notice.getEndTime())) {
+            throw new IllegalStateException("신청 기간이 종료되었습니다.");
+        }
+
+        // 현재 마지막 순번 조회 후 새로운 순번 생성
+        Integer orderNumber = firstComeDataRepository
+                .findTopByNoticeIdOrderByOrderNumberDesc(noticeId)
+                .map(data -> data.getOrderNumber() + 1)
+                .orElse(1);
+
+        // 선착순 데이터 저장
+        FirstComeData firstComeData = FirstComeData.builder()
+                .orderNumber(orderNumber)
+                .studentNumber(member.getStudentNumber())
+                .notice(notice)
+                .build();
+
+        firstComeDataRepository.save(firstComeData);
+
+        log.info("선착순 신청 완료 - 공지ID: {}, 학번: {}, 순번: {}",
+                noticeId, member.getStudentNumber(), orderNumber);
+    }
 
 
 
