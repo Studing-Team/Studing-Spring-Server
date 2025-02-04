@@ -525,6 +525,15 @@ public class NoticeService {
 
         boolean isFirstComeNotice = notice.getFirstComeNumber() != null;
 
+        boolean isFirstComeApplied = false;
+        if (isFirstComeNotice) {
+            isFirstComeApplied = firstComeDataRepository
+                    .existsByNoticeIdAndStudentNumber(noticeId, currentMember.getStudentNumber());
+        }
+
+
+
+
         return NoticeDetailResponse.from(
                 notice.getId(),
                 notice.getTitle(),
@@ -542,7 +551,8 @@ public class NoticeService {
                 isAuthor,
                 notice.getStartTime(),
                 notice.getEndTime(),
-                isFirstComeNotice
+                isFirstComeNotice,
+                isFirstComeApplied
         );
     }
 

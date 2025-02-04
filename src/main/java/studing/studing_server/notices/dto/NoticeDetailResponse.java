@@ -21,8 +21,9 @@ public record NoticeDetailResponse(
         boolean isAuthor,
         String startTime,
         String endTime,
-        boolean isFirstComeNotice
-        ) {
+        boolean isFirstComeNotice,
+        boolean isFirstComeApplied
+) {
     public static NoticeDetailResponse from(
             Long id,
             String title,
@@ -40,7 +41,8 @@ public record NoticeDetailResponse(
             boolean isAuthor,
             LocalDateTime startTime,
             LocalDateTime endTime,
-            boolean isFirstComeNotice
+            boolean isFirstComeNotice,
+            boolean isFirstComeApplied
 
     ) {
         return new NoticeDetailResponse(
@@ -60,7 +62,8 @@ public record NoticeDetailResponse(
                 isAuthor,
                 startTime != null ? startTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
                 endTime != null ? endTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
-                isFirstComeNotice
+                isFirstComeNotice,
+                isFirstComeApplied
         );
     }
 }
