@@ -44,6 +44,8 @@ import studing.studing_server.notices.repository.NoticeLikeRepository;
 import studing.studing_server.notices.repository.NoticeRepository;
 import studing.studing_server.notices.repository.NoticeViewRepository;
 import studing.studing_server.notices.repository.SaveNoticeRepository;
+import studing.studing_server.notification.entity.NoticeAlarm;
+import studing.studing_server.notification.repository.NoticeAlarmRepository;
 import studing.studing_server.notification.service.NotificationService;
 import studing.studing_server.universityData.entity.CollegeDepartment;
 import studing.studing_server.universityData.entity.Department;
@@ -69,6 +71,7 @@ public class NoticeService {
     private final UniversityDataRepository universityDataRepository;
     private final NotificationService notificationService;
     private final FirstComeDataRepository firstComeDataRepository;
+    private final NoticeAlarmRepository noticeAlarmRepository;
 
     private final S3Service s3Service;
 
@@ -532,7 +535,10 @@ public class NoticeService {
         }
 
 
-
+        LocalDateTime alarmTime = noticeAlarmRepository
+                .findByNoticeIdAndMemberIdAndIsCompletedFalse(noticeId, currentMember.getId())
+                .map(NoticeAlarm::getAlarmTime)
+                .orElse(null);
 
         return NoticeDetailResponse.from(
                 notice.getId(),
@@ -552,7 +558,8 @@ public class NoticeService {
                 notice.getStartTime(),
                 notice.getEndTime(),
                 isFirstComeNotice,
-                isFirstComeApplied
+                isFirstComeApplied,
+                alarmTime
         );
     }
 

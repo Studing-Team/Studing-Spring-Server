@@ -22,7 +22,8 @@ public record NoticeDetailResponse(
         String startTime,
         String endTime,
         boolean isFirstComeNotice,
-        boolean isFirstComeApplied
+        boolean isFirstComeApplied,
+        String alarmTime
 ) {
     public static NoticeDetailResponse from(
             Long id,
@@ -42,7 +43,8 @@ public record NoticeDetailResponse(
             LocalDateTime startTime,
             LocalDateTime endTime,
             boolean isFirstComeNotice,
-            boolean isFirstComeApplied
+            boolean isFirstComeApplied,
+             LocalDateTime alarmTime
 
     ) {
         return new NoticeDetailResponse(
@@ -63,7 +65,8 @@ public record NoticeDetailResponse(
                 startTime != null ? startTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
                 endTime != null ? endTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
                 isFirstComeNotice,
-                isFirstComeApplied
+                isFirstComeApplied,
+                alarmTime != null ? alarmTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null
         );
     }
 }
