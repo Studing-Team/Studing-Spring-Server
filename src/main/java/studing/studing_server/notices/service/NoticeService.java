@@ -559,7 +559,8 @@ public class NoticeService {
                 notice.getEndTime(),
                 isFirstComeNotice,
                 isFirstComeApplied,
-                alarmTime
+                alarmTime,
+                notice.getFirstComeNumber()
         );
     }
 
