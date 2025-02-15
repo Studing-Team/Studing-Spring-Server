@@ -781,7 +781,21 @@ public class NoticeService {
                 // 작성자 본인 여부 확인
                 boolean isAuthor = currentMember.getId().equals(noticeWriter.getId());
 
+                // 선착순 공지 여부 확인
+                boolean isFirstComeNotice = notice.getFirstComeNumber() != null;
 
+                // 선착순 신청 여부 확인
+                boolean isFirstComeApplied = false;
+                if (isFirstComeNotice) {
+                    isFirstComeApplied = firstComeDataRepository
+                            .existsByNoticeIdAndStudentNumber(notice.getId(), currentMember.getStudentNumber());
+                }
+
+                // 알림 예약 시간 조회
+                LocalDateTime alarmTime = noticeAlarmRepository
+                        .findByNoticeIdAndMemberIdAndIsCompletedFalse(notice.getId(), currentMember.getId())
+                        .map(NoticeAlarm::getAlarmTime)
+                        .orElse(null);
                 unreadNotices.add(UnreadNoticeResponse.from(
                         notice.getId(),
                         notice.getTitle(),
@@ -796,7 +810,12 @@ public class NoticeService {
                         images,
                         saveCheck,
                         likeCheck,
-                        isAuthor    // 추가된 매개변수
+                        isAuthor,   // 추가된 매개변수
+                        notice.getStartTime(),
+                        notice.getEndTime(),
+                        isFirstComeNotice,
+                        isFirstComeApplied,
+                        alarmTime
                 ));
             }
         }

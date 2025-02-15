@@ -18,7 +18,12 @@ public record UnreadNoticeResponse(
         List<String> images,
         boolean saveCheck,
         boolean likeCheck,
-        boolean isAuthor
+        boolean isAuthor,
+        String startTime,
+        String endTime,
+        boolean isFirstComeNotice,
+        boolean isFirstComeApplied,
+        String alarmTime
 ) {
     public static UnreadNoticeResponse from(
             Long id,
@@ -34,7 +39,13 @@ public record UnreadNoticeResponse(
             List<String> images,
             boolean saveCheck,
             boolean likeCheck,
-            boolean isAuthor
+            boolean isAuthor,
+            LocalDateTime startTime,
+            LocalDateTime endTime,
+            boolean isFirstComeNotice,
+            boolean isFirstComeApplied,
+            LocalDateTime alarmTime
+
     ) {
         return new UnreadNoticeResponse(
                 id,
@@ -50,7 +61,13 @@ public record UnreadNoticeResponse(
                 images,
                 saveCheck,
                 likeCheck,
-                isAuthor
+                isAuthor,
+                startTime != null ? startTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
+                endTime != null ? endTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
+                isFirstComeNotice,
+                isFirstComeApplied,
+                alarmTime != null ? alarmTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null
+
         );
     }
 }
