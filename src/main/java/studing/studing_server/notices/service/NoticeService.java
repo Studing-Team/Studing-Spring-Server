@@ -906,7 +906,7 @@ public class NoticeService {
             throw new IllegalStateException("해당 공지사항의 작성자만 수정할 수 있습니다.");
         }
 
-        // 기존 이미지 삭제
+        // 이미지 업데이트 - 새 이미지가 제공된 경우에만 처리
         if (updateRequest.noticeImages() != null && !updateRequest.noticeImages().isEmpty()) {
             // 기존 이미지 S3에서 삭제
             for (NoticeImage image : notice.getNoticeImages()) {
@@ -930,10 +930,30 @@ public class NoticeService {
             }
         }
 
-        // 공지사항 내용 업데이트
-        notice.setTitle(updateRequest.title());
-        notice.setContent(updateRequest.content());
-        notice.setTag(updateRequest.tag());
+        // 각 필드 개별적으로 업데이트 - 값이 제공된 경우에만
+        if (updateRequest.title() != null) {
+            notice.setTitle(updateRequest.title());
+        }
+
+        if (updateRequest.content() != null) {
+            notice.setContent(updateRequest.content());
+        }
+
+        if (updateRequest.tag() != null) {
+            notice.setTag(updateRequest.tag());
+        }
+
+        if (updateRequest.startTime() != null) {
+            notice.setStartTime(updateRequest.startTime());
+        }
+
+        if (updateRequest.endTime() != null) {
+            notice.setEndTime(updateRequest.endTime());
+        }
+
+        if (updateRequest.firstComeNumber() != null) {
+            notice.setFirstComeNumber(updateRequest.firstComeNumber());
+        }
 
         noticeRepository.save(notice);
     }
