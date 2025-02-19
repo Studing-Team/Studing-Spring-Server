@@ -980,13 +980,13 @@ public class NoticeService {
             throw new BusinessException(ErrorMessage.ALREADY_APPLIED);
         }
 
-        // 현재 신청 인원 확인
-        long currentApplicants = firstComeDataRepository.countByNoticeId(noticeId);
-
-        // 인원 초과 확인
-        if (currentApplicants >= notice.getFirstComeNumber()) {
-            throw new BusinessException(ErrorMessage.EXCEED_FIRST_COME_NUMBER);
-        }
+//        // 현재 신청 인원 확인
+//        long currentApplicants = firstComeDataRepository.countByNoticeId(noticeId);
+//
+//        // 인원 초과 확인
+//        if (currentApplicants >= notice.getFirstComeNumber()) {
+//            throw new BusinessException(ErrorMessage.EXCEED_FIRST_COME_NUMBER);
+//        }
 
         // 신청 시간이 유효한지 확인
         LocalDateTime now = LocalDateTime.now();
