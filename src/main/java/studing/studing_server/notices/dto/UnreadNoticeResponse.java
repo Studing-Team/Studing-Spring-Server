@@ -23,7 +23,8 @@ public record UnreadNoticeResponse(
         String endTime,
         boolean isFirstComeNotice,
         boolean isFirstComeApplied,
-        String alarmTime
+        String alarmTime,
+        Integer firstComeNumber
 ) {
     public static UnreadNoticeResponse from(
             Long id,
@@ -44,7 +45,8 @@ public record UnreadNoticeResponse(
             LocalDateTime endTime,
             boolean isFirstComeNotice,
             boolean isFirstComeApplied,
-            LocalDateTime alarmTime
+            LocalDateTime alarmTime,
+            Integer firstComeNumber
 
     ) {
         return new UnreadNoticeResponse(
@@ -66,7 +68,8 @@ public record UnreadNoticeResponse(
                 endTime != null ? endTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
                 isFirstComeNotice,
                 isFirstComeApplied,
-                alarmTime != null ? alarmTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null
+                alarmTime != null ? alarmTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null,
+                firstComeNumber
 
         );
     }
