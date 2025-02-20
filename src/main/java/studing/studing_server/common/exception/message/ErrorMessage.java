@@ -19,9 +19,9 @@ LOGIN_ID_NOT_FOUND(HttpStatus.UNAUTHORIZED.value(), "존재하지 않는 아이�
     EXCEED_FIRST_COME_NUMBER(HttpStatus.CONFLICT.value(), "선착순 신청 인원이 초과되었습니다."),
     NOT_STARTED_FIRST_COME(HttpStatus.CONFLICT.value(), "아직 신청 시간이 되지 않았습니다."),
     ENDED_FIRST_COME(HttpStatus.CONFLICT.value(), "신청 기간이 종료되었습니다."),
-    INVALID_ALARM_TIME(HttpStatus.BAD_REQUEST.value(), "알림 시간은 현재 시간 이후로 설정해야 합니다."),
+    INVALID_ALARM_TIME(HttpStatus.CONFLICT.value(), "알림 시간은 현재 시간 이후로 설정해야 합니다."),
     DUPLICATE_ALARM_SETTING(HttpStatus.CONFLICT.value(), "이미 해당 공지사항에 대한 알림이 설정되어 있습니다."),
-    FCM_TOKEN_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "알림을 받을 수 있는 기기가 등록되어 있지 않습니다.");
+    FCM_TOKEN_NOT_FOUND(HttpStatus.CONFLICT.value(), "알림을 받을 수 있는 기기가 등록되어 있지 않습니다.");
     private final int status;
     private final String message;
 }
